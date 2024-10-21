@@ -96,6 +96,7 @@ fonthandle selGroupFont0;
 fonthandle selGroupFont1;
 fonthandle selGroupFont2;
 fonthandle selGroupFont3;
+fonthandle tutTextFont1;
 
 real32 SEL_MinSelectionRadius;
 real32 selMinSelectionRadius;
@@ -142,8 +143,9 @@ void selStartup(void)
     selReset();
     selGroupFont0 = frFontRegister(selFontName0);
     selGroupFont1 = frFontRegister(selFontName1);
-    selGroupFont2 = frFontRegister(selFontName2);
-    selGroupFont3 = frFontRegister(selFontName3);
+    selGroupFont2 = frFontRegister(selFontName1);
+    selGroupFont3 = frFontRegister(selFontName1);
+    tutTextFont1 = frFontRegister("ScrollingText.hff");
 }
 
 /*-----------------------------------------------------------------------------
@@ -1239,11 +1241,30 @@ void selStatusDraw0(Ship *ship)
     sdword numGuns;                 //used for missile count
     sdword i;                       //counter
     udword cloaktime,maxcloaktime,gravtime,maxgravtime,maxTechTime,techtime;
+    int health_bar_height = 6;
+    int resource_bar_height = 8;
 
     x = primGLToScreenX(ship->collInfo.selCircleX);
     y = primGLToScreenY(ship->collInfo.selCircleY);
     radius = max(ship->collInfo.selCircleRadius, selMinSelectionRadius);//radius of selection circle
     halfWidth = primGLToScreenScaleX(radius * selSelectionWidthFactor0);//width of bars
+
+    health_bar_height = primGLToScreenScaleY(radius * selSelectionWidthFactor0)/2;
+    if (health_bar_height > 8)
+    {
+        health_bar_height = 8;
+    } else if (health_bar_height < 2)
+    {
+        health_bar_height = 2;
+    }
+    resource_bar_height = primGLToScreenScaleY(radius * selSelectionWidthFactor0)/2;
+    if (resource_bar_height > 10)
+    {
+        resource_bar_height = 10;
+    } else if (resource_bar_height < 2)
+    {
+        resource_bar_height = 2;
+    }
     //health = (sdword) ship->health;                                  //get ship health color and size
     //maxHealth = (sdword) ((ShipStaticInfo *)ship->staticinfo)->maxhealth;
     //factor = (real32)health / (real32)maxHealthmaxHealth;            //amount percentage of full health
@@ -1268,7 +1289,7 @@ void selStatusDraw0(Ship *ship)
     rect.x0 = x - halfWidth;
     rect.y0 = y - primGLToScreenScaleX(radius);
     rect.x1 = rect.x0 + ((sdword) ((halfWidth * 2) * factor));
-    rect.y1 = rect.y0 + 4;
+    rect.y1 = rect.y0 + health_bar_height;
     primRectSolid2(&rect, healthColor);
     //draw backdrop of health
     rect.x0 = rect.x1;
@@ -1339,8 +1360,8 @@ void selStatusDraw0(Ship *ship)
         }
         //draw inside of fuel
         rect.x0 = x - halfWidth;
-        rect.y0 += 5;
-        rect.y1 += 5;
+        rect.y0 += health_bar_height+1;
+        rect.y1 += resource_bar_height;
         rect.x1 = rect.x0 + (halfWidth * 2) * (sdword)fuel / (sdword)maxFuel;
         primRectSolid2(&rect, fuelColor);
         //draw backdrop of fuel
@@ -1356,8 +1377,8 @@ void selStatusDraw0(Ship *ship)
         resources = ship->resources;
         //draw inside of resources
         rect.x0 = x - halfWidth;
-        rect.y0 += 5;
-        rect.y1 += 5;
+        rect.y0 += health_bar_height+1;
+        rect.y1 += resource_bar_height;
         rect.x1 = rect.x0 + (halfWidth * 2) * resources / maxResources;
         primRectSolid2(&rect, selShipResourceColor);
         //draw backdrop of resources
@@ -1375,8 +1396,8 @@ void selStatusDraw0(Ship *ship)
         cloaktime = (long ) ((CloakGeneratorSpec *)ship->ShipSpecifics)->CloakStatus;
         //draw inside of cloak time
         rect.x0 = x - halfWidth;
-        rect.y0 += 5;
-        rect.y1 += 5;
+        rect.y0 += health_bar_height+1;
+        rect.y1 += resource_bar_height;
         rect.x1 = rect.x0 + (halfWidth * 2) * cloaktime / maxcloaktime;
         cloakcolor =   selShipResourceColor;
         cloakdarkcolor = selShipDarkResourceColor;
@@ -1396,8 +1417,8 @@ void selStatusDraw0(Ship *ship)
         gravtime = (long ) (maxgravtime - ((GravWellGeneratorSpec *)ship->ShipSpecifics)->TimeOn);
         //draw inside of cloak time
         rect.x0 = x - halfWidth;
-        rect.y0 += 5;
-        rect.y1 += 5;
+        rect.y0 += health_bar_height+1;
+        rect.y1 += resource_bar_height;
         rect.x1 = rect.x0 + (halfWidth * 2) * gravtime / maxgravtime;
         gravcolor =   selShipResourceColor;
         gravdarkcolor = selShipDarkResourceColor;
@@ -1420,8 +1441,8 @@ void selStatusDraw0(Ship *ship)
                 maxTechTime = (long) ((SalCapCorvetteStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->getTechTime;
                 techtime = (long) ((SalCapCorvetteSpec *) ship->ShipSpecifics)->timeCounter;
                 rect.x0 = x - halfWidth;
-                rect.y0 += 5;
-                rect.y1 += 5;
+                rect.y0 += health_bar_height+1;
+                rect.y1 += resource_bar_height;
                 rect.x1 = rect.x0 + (halfWidth * 2) * techtime/maxTechTime - fontWidth(" ");
 
                 gravcolor =   selShipResourceColor;
@@ -1445,8 +1466,8 @@ void selStatusDraw0(Ship *ship)
             //brown stripe should stay until the salcapcorvette docks to
             //transfer the technology
             rect.x0 = x - halfWidth;
-            rect.y0 += 5;
-            rect.y1 += 5;
+            rect.y0 += health_bar_height+1;
+            rect.y1 += resource_bar_height;
             rect.x1 = rect.x0 + (halfWidth * 2) - fontWidth(" ");
 
             gravcolor =   selShipResourceColor;
@@ -1466,7 +1487,7 @@ void selStatusDraw0(Ship *ship)
     }
     else if (ship->shipsInsideMe != NULL && ship->shiptype != DDDFrigate)
     {                                                       //print number of docked ships
-        fontMakeCurrent(selGroupFont3);
+        fontMakeCurrent(selGroupFont1);
         fontPrintf(x - halfWidth - 1, rect.y1 + 4, selHotKeyNumberColor,
                    strGetString(strFightersCorvettesDocked), ship->shipsInsideMe->FightersInsideme,
                    ship->shipsInsideMe->CorvettesInsideme);

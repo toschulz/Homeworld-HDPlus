@@ -11,6 +11,7 @@
 
 #include "Region.h"
 #include "SpaceObj.h"
+#include "font.h"
 
 /*=============================================================================
     Defines:
@@ -42,6 +43,11 @@ typedef struct
 extern bool32 ioRunning;
 
 
+extern int ioRunning1;
+extern fonthandle ioShipListFont;
+extern int ioShipListWidth;
+extern color ioListTextColor;
+
 /*=============================================================================
     Function Prototypes:
 =============================================================================*/
@@ -56,4 +62,7 @@ void ioStartup(void);
 void ioShutdown(void);
 void ioResolutionChange(void);
 
+void getioShipListHieght();
+
 #endif
+

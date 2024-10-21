@@ -337,7 +337,7 @@ void animAviDecode(sdword frame)
 
     header = animScriptHeader;
 
-    framerate = 15.0f;
+    framerate = 30.0f;
     timeElapsed = (real32)frame / framerate;
 
     event = &animScriptHeader->events[animCurrentEvent];

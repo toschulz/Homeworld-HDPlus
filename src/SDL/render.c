@@ -74,6 +74,8 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "utility.h"
+#include "rinit.h"
+#include "Options.h"
 #ifdef HW_ENABLE_GLES
 #include "SDL_syswm.h"
 #endif
@@ -125,7 +127,10 @@ vector g_RndPosition;
 
 bool32 rndTakeScreenshot = FALSE;
 
-extern bool32 enableMSAA;
+//extern bool32 enableMSAA;
+
+
+
 
 /*=============================================================================
     Private Types:
@@ -136,6 +141,8 @@ extern bool32 enableMSAA;
 =============================================================================*/
 //this function pointer is what to call to render the main view
 renderfunction rndMainViewRender = rndMainViewRenderFunction;
+
+
 
 #if USE_RND_HINT
 static sdword rndHint = 0;
@@ -895,7 +902,7 @@ bool32 setupPixelFormat()
 	}
 
     /* Create OpenGL window. */
-    flags = SDL_WINDOW_OPENGL;
+    flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI;
 
 #ifdef _WIN32
     HRESULT hr = SetProcessDPIAware();
@@ -976,6 +983,7 @@ bool32 setupPixelFormat()
 #else
 	if (enableMSAA) {
         MSAA = 8;
+		dbgMessagef("Trying to enable OpenGL MSAA");
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, MSAA );
 	}
@@ -983,7 +991,7 @@ bool32 setupPixelFormat()
 	while (!(sdlwindow=SDL_CreateWindow("HomeworldSDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		MAIN_WindowWidth, MAIN_WindowHeight, flags)))
 	{
-        if (MSAA < 2)
+		if (MSAA < 2)
         {
             SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
             SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
@@ -996,9 +1004,7 @@ bool32 setupPixelFormat()
                     return FALSE;
             }
         }
-
-	    fprintf (stderr, "Couldn't set %dx MSAA video mode: %s\n", MSAA, SDL_GetError ());
-
+		fprintf (stderr, "Couldn't set %dx MSAA video mode: %s\n", MSAA, SDL_GetError ());
         MSAA /= 2;
         
         SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
@@ -1009,7 +1015,7 @@ bool32 setupPixelFormat()
         return FALSE;
 #endif
 
-    SDL_GL_SetSwapInterval(1);
+	//SDL_GL_SetSwapInterval(1);
 
     SDL_GL_MakeCurrent(sdlwindow, glcontext);
 
@@ -2333,6 +2339,7 @@ void rndMainViewAllButRenderFunction(Camera *camera)
     ;
 }
 
+//static enum WhetherToDraw {
 enum WhetherToDraw {
     Draw = 1,
     DontDraw = 0,
@@ -2344,7 +2351,8 @@ static enum WhetherToDraw onRenderEffect(Effect* effect) {
     if (effectowner->objtype != OBJ_BulletType) return Draw;
 
     // effect is owned by a bullet
-    Bullet* const bullet = (Bullet const*)effectowner;
+    //Bullet const* const bullet = (Bullet const*)effectowner;
+	Bullet* const bullet = (Bullet const*)effectowner;
     if (bullet->bulletType == BULLET_Beam && bullet->timelived <= UNIVERSE_UPDATE_PERIOD) {
         return DontDraw;
     }
@@ -3941,12 +3949,109 @@ DEFINE_TASK(rndRenderTask)
         
         mouseDraw();                                        //draw mouse atop everything
       
-        if (universePause || !gameIsRunning)
+        if (universePause)
         {
-            fontMakeCurrent(selGroupFont2);
+            fontMakeCurrent(selGroupFont0);
+        	//fontPrint(MAIN_WindowWidth - fontWidth(minorBuildVersion) - 2, MAIN_WindowHeight - fontHeight(" ") - 2, colWhite, minorBuildVersion);
+            //fontPrint(MAIN_WindowWidth - fontWidth(networkVersion) - fontWidth(minorBuildVersion) - 8, MAIN_WindowHeight - fontHeight(" ") - 2, colWhite, networkVersion);
+            fontPrint(MAIN_WindowWidth - fontWidth("Paused") - 8, MAIN_WindowHeight - fontHeight(" ") - 2 - 57, colWhite, "Paused");
+        }
+
+        if (!gameIsRunning)
+        {
+            fontMakeCurrent(selGroupFont0);
         	fontPrint(MAIN_WindowWidth - fontWidth(minorBuildVersion) - 2, MAIN_WindowHeight - fontHeight(" ") - 2, colWhite, minorBuildVersion);
             fontPrint(MAIN_WindowWidth - fontWidth(networkVersion) - fontWidth(minorBuildVersion) - 8, MAIN_WindowHeight - fontHeight(" ") - 2, colWhite, networkVersion);
         }
+
+        if (universeTurbo)
+        {
+            char turbo_str[24];
+            sprintf(turbo_str, "Time Compression: %dX", turboTimeCompressionFactor);
+            fontMakeCurrent(selGroupFont0);
+        	fontPrint(MAIN_WindowWidth - fontWidth(turbo_str) - 8, MAIN_WindowHeight - fontHeight(" ") - 2 - 57, colWhite, turbo_str);
+        }
+
+        if (auto_delta_msg_flag)
+		{
+			time_t current_ts = time(NULL);
+			if ((current_ts - auto_delta_ts) < 10)
+			{
+				/*char turbo_str[24];
+				sprintf(turbo_str, "Auto Delta Formation");
+				fontMakeCurrent(selGroupFont0);
+				fontPrint(8, 8, colWhite, turbo_str);*/
+				AutoDeltaFormationProcessMsgList();
+			} else
+			{
+				auto_delta_msg_flag = FALSE;
+				AutoDeltaFormationDeleteMsgList();
+			}
+		}
+
+		if (nlips_msg_flag)
+		{
+			time_t current_ts = time(NULL);
+			if ((current_ts - nlips_msg_ts) < 5)
+			{
+				ShowNLIPSMSG();
+			} else
+			{
+				nlips_msg_flag = FALSE;
+			}
+		}
+
+        //always display Resources
+        /*if (gameIsRunning && ext_info_overlay && universe.curPlayerPtr != NULL)
+        {
+            char ru_str[24];
+            sprintf(ru_str, "RUs: %d", universe.curPlayerPtr->resourceUnits);
+            fontMakeCurrent(selGroupFont0);
+			color rus_bg_color = colRGBA(0  , 100, 160, 100);
+			color rus_border_color = colRGBA(0  , 100, 160, 255);
+			rectangle my_rec;
+			my_rec.x0 = (MAIN_WindowWidth/2 - fontWidth(ru_str)/2) - 24;
+			my_rec.y0= 0;
+			my_rec.x1 = my_rec.x0 + fontWidth(ru_str)+28;
+			my_rec.y1 = fontHeight(" ")+16;
+			primRectTranslucent2(&my_rec,rus_bg_color);
+
+			my_rec.x0 = my_rec.x0-2;
+			my_rec.y0= 0;
+			my_rec.x1 = my_rec.x1+2;
+			my_rec.y1 = my_rec.y1+2;
+			primRectOutline2(&my_rec,2,rus_border_color);
+
+            fontPrint(MAIN_WindowWidth/2 - fontWidth(ru_str)/2 - 8, 8, colWhite, ru_str);
+        }*/
+
+        if (gameIsRunning && ext_info_overlay)
+        {
+            fontMakeCurrent(selGroupFont0);
+            cmTraverseFactoryLinkedList(colWhite);
+        }
+
+        if (gameIsRunning && ext_info_overlay)
+        {
+            fontMakeCurrent(selGroupFont0);
+            rmTraverseResearchList(colWhite);
+        }
+
+        if (gameIsRunning && ext_info_overlay)
+        {
+            //cmTraverseFactoryLinkedList();
+			fontMakeCurrent(selGroupFont0);
+			tbDrawShipCommands(colWhite);
+        }
+
+        if (gameIsRunning && ext_info_overlay)
+        {
+            //cmTraverseFactoryLinkedList();
+			//fontMakeCurrent(selGroupFont0);
+			//tbDrawShipCommands(colWhite);
+			getioShipListHieght();
+        }
+
 
         //take a screenshot or sequence thereof
         if (keyIsStuck(SS_SCREENSHOT_KEY)
@@ -4644,4 +4749,10 @@ void rndFlush(void)
 #else
     SDL_GL_SwapWindow(sdlwindow);
 #endif
+    //add SDL_Delay during 3D pieplate movment
+    if (piePointSpecMode == PSM_Z)
+    {
+        SDL_Delay((1000/display_refresh_rate)*0.8);
+    }
+    //SDL_Delay(1);
 }

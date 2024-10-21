@@ -170,4 +170,6 @@ void rmResetStaticInfo(void);
 void   rmAPIStartup(void);
 void   rmAPIShutdown(void);
 
+void rmTraverseResearchList(color col);
+
 #endif

@@ -77,8 +77,10 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "utility.h"
+#include "CommandLayer.h"
 
 #ifdef _WIN32
+    //#define WIN32_LEAN_AND_MEAN
     #include <windows.h>
 #endif
 
@@ -87,6 +89,9 @@
 #endif
 
 #undef UTY_SCREEN_SHOT
+
+#define IO_DefaultFont          "HW_EuroseCond_11.hff"
+#define IO_BigDefaultFont          "Arial_b17.hff"
 
 /*=============================================================================
     Data:
@@ -131,6 +136,9 @@ bool32 mrNoAI = FALSE;
 //fonthandle for Big Font
 static fonthandle mrBigFont = 0;
 
+char mrFormationFontName[64] = IO_DefaultFont;
+char mrBigFontName[64] = IO_BigDefaultFont;
+
 //key definitions
 struct
 {
@@ -151,6 +159,7 @@ mrKeyFunction[] =
     {{EKEY,      0,      0,      0}, 1, RPE_KeyDown},
     {{FKEY,      0,      0,      0}, 1, RPE_KeyDown},
     {{RKEY,      0,      0,      0}, 1, RPE_KeyDown},
+	{{NKEY,      0,      0,      0}, 1, RPE_KeyDown},
     {{MMOUSE_BUTTON,0,   0,      0}, 1, RPE_KeyDown},
     {{MMOUSE_DOUBLE,0,   0,      0}, 1, RPE_KeyDown},
     {{HKEY2,      0,      0,      0}, 1, RPE_KeyDown},
@@ -190,6 +199,7 @@ mrKeyFunction[] =
     {{F9KEY,     0,      0,      0}, 1, RPE_KeyDown},
     {{F10KEY,    0,      0,      0}, 1, RPE_KeyDown},
     {{F11KEY,    0,      0,      0}, 1, RPE_KeyDown},
+	{{F12KEY,    0,      0,      0}, 1, RPE_KeyDown},
     {{HOMEKEY,   0,      0,      0}, 1, RPE_KeyDown},
     {{PAGEDOWNKEY,0,     0,      0}, 1, RPE_KeyDown},
     {{PAGEUPKEY, 0,      0,      0}, 1, RPE_KeyDown},
@@ -206,6 +216,7 @@ mrKeyFunction[] =
 #endif
 
     {{SHIFTKEY,  0,      0,      0}, 1, RPE_KeyDown | RPE_KeyUp},
+	{{CONTROLKEY,  0,      0,      0}, 1, RPE_KeyDown | RPE_KeyUp},
 #if ETG_RELOAD_KEY
     {{ETG_RELOAD_KEY,0,  0,      0}, 1, RPE_KeyDown | RPE_KeyUp},
 #endif
@@ -505,8 +516,8 @@ void mrStartup(void)
                          mrKeyFunction[index].key[2], mrKeyFunction[index].key[3]);
     }
 
-    mrBigFont = frFontRegister("Arial_b17.hff");
-    mrFormationFont = frFontRegister("default.hff");
+    mrBigFont = frFontRegister(mrBigFontName);
+    mrFormationFont = frFontRegister(mrFormationFontName);
 }
 
 /*-----------------------------------------------------------------------------
@@ -658,6 +669,22 @@ void mrCustomFormation(char *string, featom *atom)
         return;
     }
     mrSetTheFormation(CUSTOM_FORMATION);
+}
+
+void mrAutoFormation(char *string, featom *atom)
+{
+    if ((playPackets) || (universePause && !opPauseOrders) || (mrDisabled))
+    {
+        return;
+    }
+
+    if ((tutorial==TUTORIAL_ONLY) && !tutEnable.bContextFormCustom)
+    {
+        mrMenuDontDisappear = TRUE;
+        return;
+    }
+    //mrSetTheFormation(CUSTOM_FORMATION);
+     AutoDeltaFormation(selSelected);
 }
 
 
@@ -1364,6 +1391,8 @@ void mrKeyRelease(sdword ID)
     // Drew's keybinding
     ID = (sdword)kbCheckBindings(ID);
 
+	//dbgMessagef("mrKeyRelease");
+
     switch (ID)
     {
         case SHIFTKEY:
@@ -1371,6 +1400,12 @@ void mrKeyRelease(sdword ID)
             {
                 piePointModeToggle(FALSE);
                 ioSetSelection(TRUE);
+            }
+            break;
+		case CONTROLKEY:
+            if (mrHoldRight != mrCameraMotion)
+            {
+                ioCtrlSetSelection(TRUE);
             }
             break;
         case ZKEY:
@@ -1572,7 +1607,7 @@ Ship *mrNextMothershipPtr(Ship *mothership)
 ----------------------------------------------------------------------------*/
 void mrKeyPress(sdword ID)
 {
-    if (!gameIsRunning)
+	if (!gameIsRunning)
     {
         return;
     }
@@ -1600,6 +1635,14 @@ void mrKeyPress(sdword ID)
 // handler code unless we explicitly skip that lookup. Of course having checked for it
 // here we could also put the handler code here too but for consistency that's been left
 // in the switch().
+
+    //dbgMessagef("mrKeyPress, id: %d", ID);
+    /*if (ID == IKEY)
+    {
+
+    }*/
+    //dbgMessagef("mrKeyPress, id: %d, QKEY", ID);
+
 #ifdef __APPLE__
     if (ID != QKEY)
 #endif
@@ -1631,7 +1674,7 @@ void mrKeyPress(sdword ID)
 #if MR_KEYBOARD_CHEATS
     if keyIsHit(SHIFTKEY) mrScanDebugCodes(ID);
 #endif
-
+	//dbgMessagef("keyID: %d", ID);
     switch (ID)
     {
         case SHIFTKEY:
@@ -1660,7 +1703,17 @@ void mrKeyPress(sdword ID)
             break;
         case PAGEUPKEY:
             gcPageUpProcess();
+			dbgMessagef("PAGEUPKEY");
             break;
+		case NKEY:
+			if (keyIsHit(CONTROLKEY))
+			{
+				dbgMessagef("CTRL+N");
+			} else
+			{
+				dbgMessagef("N");
+			}
+			break;
         case ZEROKEY:
         case ONEKEY:
         case TWOKEY:
@@ -1899,6 +1952,11 @@ processEscapeKey:
                 if (!multiPlayerGame)
                 {
                     universePause = TRUE;
+                    if (universeTurbo)
+                    {
+                        universeTurbo = 0;
+                        dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+                    }
                 }
                 soundEvent(NULL, UI_Click);
                 PossiblyResetTaskbar();
@@ -2237,6 +2295,23 @@ cancelfocus:
 
                 tutGameMessage("KB_TacticsPrevious");
             }
+            if(keyIsHit(CONTROLKEY))
+            {
+                //dbgMessagef("CTRL+[");
+				if (disableNLIPS == TRUE)
+				{
+					disableNLIPS = FALSE;
+					updateNLIPSStatus();
+				} else
+				{
+					disableNLIPS = TRUE;
+					updateNLIPSStatus();
+				}
+				nlips_msg_ts = time(NULL);
+				nlips_msg_flag = TRUE;
+
+                break;
+            }
             break;
         case RBRACK:
             if(keyIsHit(SHIFTKEY))
@@ -2369,7 +2444,13 @@ cancelfocus:
             if ((!multiPlayerGame) || (playPackets) || (universePause) || (mrDisabled) )
             {
                 universeTurbo = !universeTurbo;
+                soundEvent(NULL, UI_Click);
                 dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+                if (universePause)
+                {
+                    universePause = 0;
+                    dbgMessage(universePause ? "Turbo ON" : "Turbo OFF");
+                }
             }
             break;
 
@@ -2380,6 +2461,12 @@ cancelfocus:
             }
             break;
         case PKEY:
+             //dbgMessage("PKEY");
+            if (keyIsHit(CONTROLKEY))
+            {
+                //soundEventPause(TRUE);
+                dbgMessagef("mrKeyPress, id: %d, QKEY", ID);
+            }
             if ((!multiPlayerGame) && NoModifierKeyPressed())
             {
                 tutGameMessage("KB_Pause");
@@ -2398,6 +2485,11 @@ cancelfocus:
                 universePause = !universePause;
                 dbgMessage(universePause ? "Pause ON" : "Pause OFF");
                 soundEvent(NULL, UI_Click);
+                if (universeTurbo)
+                {
+                    universeTurbo = 0;
+                    dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+                }
             }
 #if MR_SOUND_RELOAD_VOLUMES
             else if (keyIsHit(SHIFTKEY))
@@ -2430,7 +2522,6 @@ cancelfocus:
                 utyGameQuit(NULL, NULL);
             }
 #endif
-
             if (pilotView)
                 bitToggle(universe.mainCameraCommand.ccMode,CCMODE_PILOT_SHIP);
             break;
@@ -2528,26 +2619,31 @@ docapslock:
             break;
 
     case F1KEY:
-            if(!keyIsHit(CONTROLKEY))
+			if (keyIsHit(CONTROLKEY))
+            {
+                //soundEventPause(TRUE);
+                dbgMessagef("mrKeyPress, id: %d, F1KEY", ID);
+                ext_info_overlay = !ext_info_overlay;
+                dbgMessage(ext_info_overlay ? "ext_info_overlay ON" : "ext_info_overlay OFF");
+                soundEvent(NULL, UI_Click);
+            } else
             {
                 tutGameMessage("KB_FleetView");
+				dbgMessagef("mrKeyPress, id: %d, F1KEY", ID);
                 ccViewToggleMissionSphere(&universe.mainCameraCommand);
             }
-            else
-            {
-                if(!multiPlayerGame)
-                {
-                    if(keyIsHit(ALTKEY) || keyIsHit(RALTKEY))
-                    {
-                        universeRealTimeTweak((SelectCommand *)&selSelected);
-                    }
-                    else
-                    {
-                        tacticsShutDown();
-                        tacticsStartUp();
-                    }
-                }
-            }
+			if(!multiPlayerGame)
+			{
+				if(keyIsHit(ALTKEY) || keyIsHit(RALTKEY))
+				{
+					universeRealTimeTweak((SelectCommand *)&selSelected);
+				}
+				else
+				{
+					tacticsShutDown();
+					tacticsStartUp();
+				}
+			}
             break;
 
         case KKEY:
@@ -2613,6 +2709,11 @@ docapslock:
             }
             break;
         case F5KEY:
+            if (keyIsHit(CONTROLKEY))
+            {
+                dbgMessagef("control - f5");
+                AutoDeltaFormation(selSelected);
+            }
         case F6KEY:
         case F7KEY:
         case F8KEY:
@@ -2630,12 +2731,14 @@ docapslock:
                     (void)gpQuickLoad();
                 }
             }
-            if (selSelected.numShips >= MIN_SHIPS_IN_FORMATION)
+            if (selSelected.numShips >= MIN_SHIPS_IN_FORMATION && !keyIsHit(CONTROLKEY))
             {
                 mrSetTheFormation(ID - F5KEY);
             }
             break;
-
+		case F12KEY:
+			dbgMessagef("F12");
+			break;
         case SS_SCREENSHOT_KEY:
 #ifdef __APPLE__
         case SS_SCREENSHOT_KEY_2:

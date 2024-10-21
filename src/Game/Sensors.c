@@ -91,7 +91,7 @@ bool32 smFleetIntel = FALSE;
 Camera smCamera;
 Camera smTempCamera;
 
-sdword smTacticalOverlay = FALSE;
+sdword smTacticalOverlay = TRUE;
 sdword smResources = TRUE;
 sdword smNonResources = TRUE;
 bool32 smFocusOnMothershipOnClose = FALSE;
@@ -248,7 +248,7 @@ ubyte smShipTypeRenderFlags[TOTAL_NUM_SHIPS] =
     0,                                          //LightDefender
     0,                                          //LightInterceptor
     0,                                          //MinelayerCorvette
-    SM_TO,                                      //MissileDestroyer
+    SM_TO | SM_Mesh,                            //MissileDestroyer
     SM_Mesh | SM_Exclude,                       //Mothership
     0,                                          //MultiGunCorvette
     SM_Exclude,                                 //Probe
@@ -259,7 +259,7 @@ ubyte smShipTypeRenderFlags[TOTAL_NUM_SHIPS] =
     SM_TO,                                      //ResourceController
     0,                                          //SalCapCorvette
     SM_TO,                                      //SensorArray
-    SM_TO,                                      //StandardDestroyer
+    SM_TO | SM_Mesh,                            //StandardDestroyer
     SM_TO,                                      //StandardFrigate
     SM_Exclude,                                 //Drone
     SM_Exclude,                                 //TargetDrone
@@ -512,7 +512,7 @@ scriptEntry smTweaks[] =
     { "FOW_DustGasK3",              scriptSetReal32CB, &smFOW_DustGasK3 },
     { "FOW_DustGasK4",              scriptSetReal32CB, &smFOW_DustGasK4 },
     { "smFOWBlobUpdateTime",        scriptSetReal32CB, &smFOWBlobUpdateTime },
-    
+
     END_SCRIPT_ENTRY
 };
 
@@ -1008,7 +1008,7 @@ justRenderAsDot:
 
 //                    if ((((Ship *)obj)->playerowner->playerIndex == universe.curPlayerIndex))
 //                    {                                       //enable double-size points
-                        pointSize = 2.0f;
+                        pointSize = SM_LARGE_POINT;
 //                        //glPointSize(2.0f);
 //                    }
 //                    else
@@ -1029,7 +1029,7 @@ justRenderAsDot:
                     {
                         glPointSize(pointSize);
                         primPoint3(&obj->posinfo.position, c);  //everything is rendered as a point
-                        glPointSize(1.0f);
+                        glPointSize(SM_LARGE_POINT);
                     }
                 }
                 break;
@@ -1042,7 +1042,7 @@ justRenderAsDot:
 
                 if (radius > SM_LargeResourceSize)
                 {
-                    pointSize = 2.0f;
+                    pointSize = SM_RESOURCES_POINT;
                     //glPointSize(2.0f);
                 }
                 rndTextureEnable(FALSE);
@@ -1063,9 +1063,9 @@ justRenderAsDot:
                 {
                     glPointSize(pointSize);
                     primPoint3(&obj->posinfo.position, c);     //everything is rendered as a point
-                    glPointSize(1.0f);
+                    glPointSize(SM_RESOURCES_POINT);
                 }
-                pointSize = 1.0f;
+                pointSize = SM_RESOURCES_POINT;
                 break;
             case OBJ_NebulaType:
             case OBJ_GasType:
@@ -1439,7 +1439,7 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
     real32 pointSize;
     real32 screenX, screenY;
 
-    glPointSize(2.0f);
+    glPointSize(SM_LARGE_POINT);
     //compute a list of sub-blobs for the enemies.  It will be deleted with the parent blob.
     if (thisBlob->subBlobs.num == BIT31)
     {                                                       //if list not yet created
@@ -1518,7 +1518,7 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
             primPoint3(&subBlob->centre, c);
         }
     }
-    glPointSize(1.0f);
+    glPointSize(SM_SMALL_POINT);
     //draw all objects in the sphere
     for (index = 0, objPtr = blobObjects->SpaceObjPtr; index < blobObjects->numSpaceObjs; index++, objPtr++)
     {
@@ -1572,11 +1572,11 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
 
                 if (radius > SM_LargeResourceSize)
                 {
-                    pointSize = 2.0f;
+                    pointSize = SM_RESOURCES_POINT;
                 }
                 else
                 {
-                    pointSize = 1.0f;
+                    pointSize = SM_SMALL_POINT;
                 }
                 if ((!smBigPoints) && pointSize != 1.0f && ((Ship *)obj)->collInfo.selCircleRadius > 0.0f)
                 {
@@ -1590,7 +1590,7 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
                 {
                     glPointSize(pointSize);
                     primPoint3(&obj->posinfo.position, c);
-                    glPointSize(1.0f);
+                    glPointSize(SM_SMALL_POINT);
                 }
                 break;
             case OBJ_DerelictType:
@@ -1918,7 +1918,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
 //        node = node->next;
     if (smTacticalOverlay)
     {
-        oldFont = fontMakeCurrent(selGroupFont3);
+        oldFont = fontMakeCurrent(selGroupFont0);
         carrier = ShipTypeToNiceStr(Carrier);
         mothership = ShipTypeToNiceStr(Mothership);
         carrierHalfWidth = fontWidth(carrier) / 2;
@@ -2835,7 +2835,7 @@ void smHotkeyGroupsDraw(void)
     fonthandle currentFont = fontCurrentGet();
     MaxSelection selection;
 
-    fontMakeCurrent(selGroupFont3);
+    fontMakeCurrent(selGroupFont0);
     for (index = 0; index < 10; index++)
     {
         MakeShipsNotHidden((SelectCommand *)&selection, (SelectCommand *)&selHotKeyGroup[index]);
@@ -2854,6 +2854,53 @@ void smHotkeyGroupsDraw(void)
     fontMakeCurrent(currentFont);
 }
 
+void smPause(char *name, featom *atom)
+{
+    dbgMessage("smPause");
+    if ((!multiPlayerGame) && NoModifierKeyPressed())
+    {
+        tutGameMessage("KB_Pause");
+        if ((tutorial==TUTORIAL_ONLY) && (!tutEnable.bPauseGame))
+        {
+            //break;
+        } else
+        {
+            if (!universePause)
+            {
+                if (piePointSpecMode!=PSM_Idle)
+                {
+                    piePointModeOnOff();
+                }
+            }
+
+            universePause = !universePause;
+            dbgMessage(universePause ? "Pause ON" : "Pause OFF");
+            soundEvent(NULL, UI_Click);
+            if (universeTurbo)
+            {
+                universeTurbo = 0;
+                dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+            }
+        }
+    }
+}
+
+void smTurbo(char *name, featom *atom)
+{
+    dbgMessage("smTurbo");
+    if ((!multiPlayerGame) || (playPackets) || (universePause) || (mrDisabled) )
+    {
+        universeTurbo = !universeTurbo;
+        soundEvent(NULL, UI_Click);
+        if (universePause)
+        {
+            universePause = 0;
+            dbgMessage(universePause ? "Turbo ON" : "Turbo OFF");
+        }
+        dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+    }
+}
+
 /*-----------------------------------------------------------------------------
     Name        : smPan
     Description : Special-function button that handles both clicks and pan operations.
@@ -2866,6 +2913,33 @@ void smPan(char *name, featom *atom)
     if (uicDragX == 0 && uicDragY == 0)
     {                                                       //if it's just a click
         smCameraLookatPoint.x = smCameraLookatPoint.y = smCameraLookatPoint.z = 0.0f;//recentre the camera
+        dbgMessage("smPan click");
+        /*if ((!multiPlayerGame) && NoModifierKeyPressed())
+        {
+            tutGameMessage("KB_Pause");
+            if ((tutorial==TUTORIAL_ONLY) && (!tutEnable.bPauseGame))
+            {
+                //break;
+            } else
+            {
+                if (!universePause)
+                {
+                    if (piePointSpecMode!=PSM_Idle)
+                    {
+                        piePointModeOnOff();
+                    }
+                }
+
+                universePause = !universePause;
+                dbgMessage(universePause ? "Pause ON" : "Pause OFF");
+                soundEvent(NULL, UI_Click);
+                if (universeTurbo)
+                {
+                    universeTurbo = 0;
+                    dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+                }
+            }
+        }*/
     }
     else
     {                                                       //else it's a drag operation
@@ -3452,6 +3526,33 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
         case RPE_WheelUp:
             wheel_up = TRUE;
             break;
+        case PKEY:
+            dbgMessage("sensors PKEY");
+            if ((!multiPlayerGame) && NoModifierKeyPressed())
+            {
+                tutGameMessage("KB_Pause");
+                if ((tutorial==TUTORIAL_ONLY) && (!tutEnable.bPauseGame))
+                {
+                    break;
+                }
+                if (!universePause)
+                {
+                    if (piePointSpecMode!=PSM_Idle)
+                    {
+                        piePointModeOnOff();
+                    }
+                }
+
+                universePause = !universePause;
+                dbgMessage(universePause ? "Pause ON" : "Pause OFF");
+                soundEvent(NULL, UI_Click);
+                if (universeTurbo)
+                {
+                    universeTurbo = 0;
+                    dbgMessage(universeTurbo ? "Turbo ON" : "Turbo OFF");
+                }
+            }
+            break;
         case RPE_WheelDown:
             wheel_down = TRUE;
             break;
@@ -3582,6 +3683,7 @@ void smDispatch(char *name, featom *atom)
 #if SM_VERBOSE_LEVEL >= 1
     dbgMessage("smDispatch");
 #endif
+    dbgMessage("smDispatch");
     if (smHoldRight == smNULL)
     {                                                       //cannot bring up MM with RMB held down
         if (!smFleetIntel && ((!(tutorial==TUTORIAL_ONLY)) || tutEnable.bMove))
@@ -3923,6 +4025,8 @@ fecallback smCallbacks[] =
     {smSensorsSkip, SM_Skip},
     {smCancelDispatch, SM_CancelDispatch},
     {smPan, SM_Pan},
+    {smPause, SM_Pause},
+    {smTurbo, SM_Turbo},
     {smCancelMoveOrClose, SM_CancelMoveOrClose},
     {NULL, NULL},
 };
@@ -4079,10 +4183,10 @@ void smSensorsBegin(char *name, featom *atom)
         }
     }
     //compute pan distance to get these rectangles to work in high-rez
-    smViewExpandLeft    = (MAIN_WindowWidth - 640) / 2;
-    smViewExpandRight   = (MAIN_WindowWidth - 640) - smViewExpandLeft;
-    smViewExpandTop     = (MAIN_WindowHeight - 480) / 2;
-    smViewExpandBottom  = (MAIN_WindowHeight - 480) - smViewExpandTop;
+    smViewExpandLeft    = (MAIN_WindowWidth - FE_max_width) / 2;
+    smViewExpandRight   = (MAIN_WindowWidth - FE_max_width) - smViewExpandLeft;
+    smViewExpandTop     = (MAIN_WindowHeight - FE_max_height) / 2;
+    smViewExpandBottom  = (MAIN_WindowHeight - FE_max_height) - smViewExpandTop;
     //let's figure out how far we'll have to scroll each of these lists
     for (index = 0; index < smScrollCountLeft; index++)
     {

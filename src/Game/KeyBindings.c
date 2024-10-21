@@ -16,6 +16,7 @@
 #include "StringSupport.h"
 #include "Types.h"
 #include "UIControls.h"
+#include "Tweak.h"
 
 /*=============================================================================
     Defines :
@@ -714,7 +715,8 @@ void kbInitKeyBindings(void)
     sdword index;
     bool32   bInFile=FALSE;
 
-    kbKeyListFont = frFontRegister("hw_eurosecond_11.hff");
+    //kbKeyListFont = frFontRegister("hw_eurosecond_11.hff");
+	kbKeyListFont = frFontRegister(selFontName1);
 
     for (index=0;index<KEY_TOTAL_KEYS;index++)
     {

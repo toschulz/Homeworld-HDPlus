@@ -122,9 +122,14 @@ typedef struct CommandLayer
 extern bool32 enableTextFeedback;
 #endif
 
+extern time_t auto_delta_ts;
+extern bool8 auto_delta_msg_flag;
+
 /*=============================================================================
     Functions:
 =============================================================================*/
+
+void AutoDeltaFormation(MaxSelection current_selection);
 
 // Initializing, Closing, Processing
 void clInit(CommandLayer *comlayer);
@@ -297,6 +302,14 @@ void clCancelAllLaunchOrdersFromPlayer(struct Player *player);
 
 // tells ship to stay nearby protectThisShip - actual logic for attack if protectThisShip being attacked not in this routine
 void protectShip(Ship *ship,Ship *protectThisShip,bool32 passiveAttacked);
+
+void AutoDeltaFormationProcessMsgList();
+void AutoDeltaFormationDeleteMsgList();
+
+void AutoDeltaFormationPutFightersinDelta(MaxSelection fighters);
+void AutoDeltaFormationPutCorvettesin3DDelta(MaxSelection corvettes);
+void AutoDeltaFormationPutFrigatesinWall(MaxSelection firgates);
+void AutoDeltaFormationPutCapitalsinWall(MaxSelection capitals);
 
 /*=============================================================================
     Data:

@@ -1814,6 +1814,11 @@ void mgSkirmish(char *name, featom *atom)
     if (tpGameCreated.numComputers + tpGameCreated.numPlayers > MAX_MULTIPLAYER_PLAYERS) {
         tpGameCreated.numComputers = 1;
     }
+
+    if (tpGameCreated.numComputers == 0)
+	{
+		tpGameCreated.numComputers == 1;
+	}
     
     mgShowScreen(MGS_Skirmish_Basic, TRUE);
 

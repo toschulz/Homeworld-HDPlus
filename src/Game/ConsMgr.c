@@ -355,16 +355,17 @@ shipavailable cmShipsAvailableR1Reg[NSHIPS_AVAILABLE_R1REG + 1] =
     {0,ITEM_SHIP ,0,  HeavyDefender       ,  NULL},
     {0,ITEM_SHIP ,0,  LightInterceptor    ,  NULL},
     {0,ITEM_SHIP ,0,  HeavyInterceptor    ,  NULL},
-    {0,ITEM_SHIP ,0,  CloakedFighter      ,  NULL},
     {0,ITEM_SHIP ,0,  AttackBomber        ,  NULL},
+    {0,ITEM_SHIP ,0,  CloakedFighter      ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_Corvette      ,  NULL},
     {0,ITEM_SHIP ,0,  LightCorvette       ,  NULL},
-    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
     {0,ITEM_SHIP ,0,  RepairCorvette      ,  NULL},
     {0,ITEM_SHIP ,0,  SalCapCorvette      ,  NULL},
-    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
     {0,ITEM_SHIP ,0,  MultiGunCorvette    ,  NULL},
+    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
+    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
+
 
     {0,ITEM_CLASS,0,  CLASS_Resource      ,  NULL},
     {0,ITEM_SHIP ,0,  ResourceCollector   ,  NULL},
@@ -392,16 +393,17 @@ shipavailable cmShipsAvailableR1Big[NSHIPS_AVAILABLE_R1BIG + 1] =
     {0,ITEM_SHIP ,0,  HeavyDefender       ,  NULL},
     {0,ITEM_SHIP ,0,  LightInterceptor    ,  NULL},
     {0,ITEM_SHIP ,0,  HeavyInterceptor    ,  NULL},
-    {0,ITEM_SHIP ,0,  CloakedFighter      ,  NULL},
     {0,ITEM_SHIP ,0,  AttackBomber        ,  NULL},
+    {0,ITEM_SHIP ,0,  CloakedFighter      ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_Corvette      ,  NULL},
     {0,ITEM_SHIP ,0,  LightCorvette       ,  NULL},
-    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
     {0,ITEM_SHIP ,0,  RepairCorvette      ,  NULL},
     {0,ITEM_SHIP ,0,  SalCapCorvette      ,  NULL},
-    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
     {0,ITEM_SHIP ,0,  MultiGunCorvette    ,  NULL},
+    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
+    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
+
 
     {0,ITEM_CLASS,0,  CLASS_Resource      ,  NULL},
     {0,ITEM_SHIP ,0,  ResourceCollector   ,  NULL},
@@ -416,8 +418,8 @@ shipavailable cmShipsAvailableR1Big[NSHIPS_AVAILABLE_R1BIG + 1] =
     {0,ITEM_CLASS,0,  CLASS_Destroyer     ,  NULL},
     {0,ITEM_SHIP ,0,  StandardDestroyer   ,  NULL},
     {0,ITEM_SHIP ,0,  MissileDestroyer    ,  NULL},
-    {0,ITEM_SHIP ,0,  HeavyCruiser        ,  NULL},
     {0,ITEM_SHIP ,0,  Carrier             ,  NULL},
+    {0,ITEM_SHIP ,0,  HeavyCruiser        ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_NonCombat     ,  NULL},
     {0,ITEM_SHIP ,0,  Probe               ,  NULL},
@@ -438,16 +440,16 @@ shipavailable cmShipsAvailableR2Reg[NSHIPS_AVAILABLE_R2REG + 1] =
     {0,ITEM_SHIP ,0,  HeavyDefender       ,  NULL},
     {0,ITEM_SHIP ,0,  LightInterceptor    ,  NULL},
     {0,ITEM_SHIP ,0,  HeavyInterceptor    ,  NULL},
-    {0,ITEM_SHIP ,0,  DefenseFighter      ,  NULL},
     {0,ITEM_SHIP ,0,  AttackBomber        ,  NULL},
+    {0,ITEM_SHIP ,0,  DefenseFighter      ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_Corvette      ,  NULL},
     {0,ITEM_SHIP ,0,  LightCorvette       ,  NULL},
-    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
     {0,ITEM_SHIP ,0,  RepairCorvette      ,  NULL},
     {0,ITEM_SHIP ,0,  SalCapCorvette      ,  NULL},
-    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
     {0,ITEM_SHIP ,0,  MultiGunCorvette    ,  NULL},
+    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
+    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_Resource      ,  NULL},
     {0,ITEM_SHIP ,0,  ResourceCollector   ,  NULL},
@@ -475,16 +477,17 @@ shipavailable cmShipsAvailableR2Big[NSHIPS_AVAILABLE_R2BIG + 1] =
     {0,ITEM_SHIP ,0,  HeavyDefender       ,  NULL},
     {0,ITEM_SHIP ,0,  LightInterceptor    ,  NULL},
     {0,ITEM_SHIP ,0,  HeavyInterceptor    ,  NULL},
-    {0,ITEM_SHIP ,0,  DefenseFighter      ,  NULL},
     {0,ITEM_SHIP ,0,  AttackBomber        ,  NULL},
+    {0,ITEM_SHIP ,0,  DefenseFighter      ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_Corvette      ,  NULL},
     {0,ITEM_SHIP ,0,  LightCorvette       ,  NULL},
-    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
     {0,ITEM_SHIP ,0,  RepairCorvette      ,  NULL},
     {0,ITEM_SHIP ,0,  SalCapCorvette      ,  NULL},
-    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
     {0,ITEM_SHIP ,0,  MultiGunCorvette    ,  NULL},
+    {0,ITEM_SHIP ,0,  MinelayerCorvette   ,  NULL},
+    {0,ITEM_SHIP ,0,  HeavyCorvette       ,  NULL},
+
 
     {0,ITEM_CLASS,0,  CLASS_Resource      ,  NULL},
     {0,ITEM_SHIP ,0,  ResourceCollector   ,  NULL},
@@ -499,8 +502,8 @@ shipavailable cmShipsAvailableR2Big[NSHIPS_AVAILABLE_R2BIG + 1] =
     {0,ITEM_CLASS,0,  CLASS_Destroyer     ,  NULL},
     {0,ITEM_SHIP ,0,  StandardDestroyer   ,  NULL},
     {0,ITEM_SHIP ,0,  MissileDestroyer    ,  NULL},
-    {0,ITEM_SHIP ,0,  HeavyCruiser        ,  NULL},
     {0,ITEM_SHIP ,0,  Carrier             ,  NULL},
+    {0,ITEM_SHIP ,0,  HeavyCruiser        ,  NULL},
 
     {0,ITEM_CLASS,0,  CLASS_NonCombat     ,  NULL},
     {0,ITEM_SHIP ,0,  Probe               ,  NULL},
@@ -956,20 +959,336 @@ void cmScroller(char *string, featom *atom)
 
 shipsinprogress *cmFindFactory(struct Ship *ship)
 {
-    Node *node = listofShipsInProgress.head;
-    shipsinprogress *sinprogress;
+	Node *node = listofShipsInProgress.head;
+	shipsinprogress *sinprogress;
 
-    while (node != NULL)
-    {
-        sinprogress = (shipsinprogress *)listGetStructOfNode(node);
-        if (sinprogress->ship == ship)
-        {
-            return sinprogress;
-        }
-        node = node->next;
-    }
-    return NULL;
+	//dbgMessagef("cmFindFactory called, ship->playerowner->playerIndex: %d", ship->playerowner->playerIndex);
+	//dbgMessagef("cmFindFactory, listofShipsInProgress: %d", listofShipsInProgress.num);
+
+	//real32 scale = FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN;
+	//real32 scale2 = fe_scale_to_fit_factor_relic_screen();
+
+	//dbgMessagef("MAIN_WindowWidth: %d, MAIN_WindowHeight: %d, FE_RELIC_SCREEN_WIDTH: %d, FE_RELIC_SCREEN_HEIGHT: %d", MAIN_WindowWidth, MAIN_WindowHeight, FE_RELIC_SCREEN_WIDTH, FE_RELIC_SCREEN_HEIGHT);
+	//dbgMessagef("cmFindFactory, FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN: %f", scale);
+	//dbgMessagef("cmFindFactory, fe_scale_to_fit_factor_relic_screen: %f", scale2);
+	//cmTraverseFactoryLinkedList();
+
+	while (node != NULL)
+	{
+		sinprogress = (shipsinprogress *)listGetStructOfNode(node);
+		if (sinprogress->ship == ship)
+		{
+			return sinprogress;
+		}
+		node = node->next;
+	}
+	return NULL;
 }
+
+
+
+void cmTraverseFactoryLinkedList(color col)
+{
+	Node *current_node = listofShipsInProgress.head;
+	shipsinprogress *sinprogress;
+	struct Ship *current_ship;
+	shipinprogress current_build_order;
+	char* ship_name;
+	int current_y_cord = MAIN_WindowHeight/3;
+	int inital_y_cord = 0;
+	int final_y_cord = 0;
+	int carrier_number = 0;
+	color cm_bg_color = colRGBA(0  , 100, 160, 100);
+	color cm_fg_color = colRGBA(255  , 200, 0, 180);
+	color cm_border_color = colRGBA(0  , 100, 160, 255);
+	char ru_str[24];
+	rectangle my_rec;
+	//bool8 someone_has_build_orders = FALSE;
+
+	//fontPrint(8, current_y_cord, cm_fg_color, "Mothership Build Orders:");
+	current_y_cord += fontHeight(" ");
+	my_rec.x0 = 0;
+	my_rec.y0= current_y_cord;
+	my_rec.x1 = 250;
+	my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+	final_y_cord = my_rec.y1;
+	primRectTranslucent2(&my_rec,cm_bg_color);
+	sprintf(ru_str, "Resource Units: %d", universe.curPlayerPtr->resourceUnits);
+	fontPrint(8, current_y_cord, colWhite, ru_str);
+	if (inital_y_cord == 0)
+	{
+		my_rec.x0 = 0;
+		my_rec.y0= current_y_cord-4;
+		my_rec.x1 = 250;
+		my_rec.y1 = current_y_cord;
+		inital_y_cord = my_rec.y0;
+		primRectTranslucent2(&my_rec,cm_bg_color);
+	}
+	current_y_cord += 4;
+
+	while (current_node != NULL)
+	{
+		sinprogress = (shipsinprogress *)listGetStructOfNode(current_node);
+		current_ship = sinprogress->ship;
+		char cm_build_str[80];
+		char cm_build_num_str[80];
+		bool32 node_has_build_orders = FALSE;
+
+		for (int i = 0; i < TOTAL_STD_SHIPS; i++)
+		{
+			current_build_order = sinprogress->progress[i];
+			if (current_build_order.nJobs != 0)
+			{
+				node_has_build_orders = TRUE;
+				//someone_has_build_orders = TRUE;
+			}
+		}
+
+		if (current_ship->playerowner->playerIndex == 0)
+		{
+			if (node_has_build_orders && current_ship->staticinfo->shiptype == Mothership)
+			{
+				current_y_cord += fontHeight(" ");
+				my_rec.x0 = 0;
+				my_rec.y0= current_y_cord;
+				my_rec.x1 = 250;
+				my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+				primRectTranslucent2(&my_rec,cm_bg_color);
+				fontPrint(8, current_y_cord, cm_fg_color, "Mothership Build Orders:");
+				current_y_cord += 4;
+			}
+			if (node_has_build_orders && current_ship->staticinfo->shiptype == Carrier)
+			{
+				current_y_cord += fontHeight(" ");
+				carrier_number++;
+				rectangle my_rec;
+				my_rec.x0 = 0;
+				my_rec.y0= current_y_cord;
+				my_rec.x1 = 250;
+				my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+				primRectTranslucent2(&my_rec,cm_bg_color);
+				if (inital_y_cord == 0)
+				{
+					my_rec.x0 = 0;
+					my_rec.y0= current_y_cord-4;
+					my_rec.x1 = 250;
+					my_rec.y1 = current_y_cord;
+
+					inital_y_cord = my_rec.y0;
+
+					primRectTranslucent2(&my_rec,cm_bg_color);
+				}
+				sprintf(cm_build_str, "Carrier #%d Build Orders:", carrier_number);
+				fontPrint(8, current_y_cord, cm_fg_color, cm_build_str);
+				current_y_cord += 4;
+			}
+			for (int i = 0; i < TOTAL_STD_SHIPS; i++)
+			{
+				current_build_order = sinprogress->progress[i];
+				if (current_build_order.nJobs != 0)
+				{
+					float percent_done = ((float)(current_build_order.timeStart-current_build_order.timeLeft)/(float)(current_build_order.timeStart))*100;
+					sdword jobs_completed = current_build_order.nJobsTotal - current_build_order.nJobs;
+					ship_name = strGetString(i + strShipAbrevOffset);
+					capitalize(ship_name);
+					//sprintf(cm_build_str, "    (%d) %s %3.0f%%", current_build_order.nJobs, cmGetShipName(i), percent_done);
+					//sprintf(cm_build_str, "    %d x %s %3.0f%%", current_build_order.nJobs, ship_name, percent_done);
+					//if (current_build_order.nJobs != 1)
+					//{
+//						sprintf(cm_build_str, "%ss", ship_name);
+//					} else
+//					{
+//						sprintf(cm_build_str, "%s", ship_name);
+//					}
+					sprintf(cm_build_str, "%s", ship_name);
+					sprintf(cm_build_num_str, "[%d]", current_build_order.nJobs);
+					current_y_cord += fontHeight(" ");
+
+					rectangle my_rec;
+					my_rec.x0 = 0;
+					my_rec.y0= current_y_cord;
+					my_rec.x1 = 250;
+					my_rec.y1 = current_y_cord+fontHeight(" ")+6;
+					final_y_cord = my_rec.y1;
+
+					//primRectSolid2(&my_rec, cm_bg_color);
+					primRectTranslucent2(&my_rec,cm_bg_color);
+
+					fontPrint(8, current_y_cord, col, cm_build_str);
+					//fontPrint(215, current_y_cord, col, cm_build_num_str);
+					fontPrint(248-fontWidth(cm_build_num_str), current_y_cord, col, cm_build_num_str);
+
+					my_rec.x0 = 2;
+					my_rec.y0= current_y_cord+fontHeight(" ");
+					my_rec.x1 = (percent_done/100)*248;
+					my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+					primRectTranslucent2(&my_rec,cm_fg_color);
+
+					current_y_cord += 6;
+				}
+			}
+		}
+		if (current_node->next == NULL && final_y_cord != 0)
+		{
+			current_y_cord += fontHeight(" ");
+			rectangle my_rec;
+			my_rec.x0 = 0;
+			my_rec.y0= current_y_cord;
+			my_rec.x1 = 250;
+			my_rec.y1 = current_y_cord+4;
+			primRectTranslucent2(&my_rec,cm_bg_color);
+			final_y_cord = my_rec.y1;
+			//dbgMessagef("Last Node, inital_y_cord: %d, final_y_cord: %d", inital_y_cord, final_y_cord);
+
+		}
+		current_node = current_node->next;
+	}
+
+	my_rec.x0 = 2;
+	my_rec.y0= inital_y_cord-1;
+	my_rec.x1 = 250+1;
+	my_rec.y1 = final_y_cord+1;
+	primRectOutline2(&my_rec,2,cm_border_color);
+
+	/*if (someone_has_build_orders)
+	{
+		my_rec.x0 = 2;
+		my_rec.y0= inital_y_cord-1;
+		my_rec.x1 = 250+1;
+		my_rec.y1 = final_y_cord+1;
+		primRectOutline2(&my_rec,2,cm_border_color);
+	} else
+	{
+		my_rec.x0 = 2;
+		my_rec.y0= inital_y_cord-1;
+		my_rec.x1 = 250+1;
+		my_rec.y1 = final_y_cord+1;
+		primRectOutline2(&my_rec,2,cm_border_color);
+	}*/
+}
+
+/*
+char* cmGetShipName(int ship_type)
+{
+    switch (ship_type)
+    {
+		case AttackBomber:
+			return "Attack Bomber";
+			break;
+		case HeavyInterceptor:
+			return "Interceptor";
+			break;
+		case DefenseFighter:
+			return "Defense Fighter";
+			break;
+		case HeavyDefender:
+			return "Defender";
+			break;
+		case LightInterceptor:
+			return "Scout";
+			break;
+		case CloakedFighter:
+			return "Cloaked Fighter";
+			break;
+		case AdvanceSupportFrigate:
+			return "Support Frigate";
+			break;
+		case Carrier:
+			return "Carrier";
+			break;
+		case CloakGenerator:
+			return "Cloak Generator";
+			break;
+		case DDDFrigate:
+			return "Drone Frigate";
+			break;
+		case DFGFrigate:
+			return "DFG Frigate";
+			break;
+		case GravWellGenerator:
+			return "Grav Well Generator";
+			break;
+			case HeavyCorvette:
+			return "Heavy Corvette";
+			break;
+		case HeavyCruiser:
+			return "Heavy Cruiser";
+			break;
+		case IonCannonFrigate:
+			return "Ion Frigate";
+			break;
+		case LightCorvette:
+			return "Light Corvette";
+			break;
+		case MinelayerCorvette:
+			return "Minelayer Corvette";
+			break;
+		case MissileDestroyer:
+			return "Missile Destroyer";
+			break;
+			case Mothership:
+			return "Mothership";
+			break;
+		case MultiGunCorvette:
+			return "Multi-Gun Corvette";
+			break;
+		case Probe:
+			return "Probe";
+			break;
+		case ProximitySensor:
+			return "Proximity Sensor";
+			break;
+		case RepairCorvette:
+			return "Repair Corvette";
+			break;
+		case ResearchShip:
+			return "Research Ship";
+			break;
+		case ResourceCollector:
+			return "Resource Collector";
+			break;
+		case ResourceController:
+			return "Resource Controller";
+			break;
+		case SalCapCorvette:
+			return "Salvage Corvette";
+			break;
+		case SensorArray:
+			return "Sensor Array";
+			break;
+		case StandardDestroyer:
+			return "Destroyer";
+			break;
+		case StandardFrigate:
+			return "Assault Frigate";
+			break;
+		case TargetDrone:
+			return "Target Drone";
+			break;
+		case Drone:
+			return "Drone";
+			break;
+		case P1Fighter:
+			return "P1 Fighter";
+			break;
+		case P1StandardCorvette:
+			return "Standard Corvette";
+			break;
+		case P1MissileCorvette:
+			return "Missile Corvette";
+			break;
+		case P1IonArrayFrigate:
+			return "P1 Ion Array Frigate";
+			break;
+		case P1Mothership:
+			return "P1 Mothership";
+			break;
+		case CryoTray:
+			return "CryoTray";
+			break;
+    }
+    return "not_found";
+}*/
 
 void cmAddFactory(struct Ship *ship,bool32 canBuildBigShips)
 {
@@ -986,6 +1305,7 @@ void cmAddFactory(struct Ship *ship,bool32 canBuildBigShips)
         cmCarriers[cmNumCarriers - 1].ship  = ship;
         cmCarriers[cmNumCarriers - 1].owner = ship->playerowner;
     }
+    //dbgMessagef("cmAddFactory, cmNumCarriers: %d", cmNumCarriers);
     sinprogress->ship = ship;
     sinprogress->canBuildBigShips = canBuildBigShips;
     listAddNode(&listofShipsInProgress,&sinprogress->node,sinprogress);
@@ -1431,7 +1751,7 @@ void cmStartup(void)
 
     listInit(&listofShipsInProgress);
 //    cmBuildTask = taskStart(cmBuildTaskFunction, CM_TaskServicePeriod, 0);
-    cmDefaultFont = frFontRegister(cmDefaultFontName);
+    cmDefaultFont = frFontRegister(cmShipListFontName);
     cmShipListFont = frFontRegister(cmShipListFontName);
 
     cmStandardTextColor = FEC_ListItemStandard;
@@ -1892,7 +2212,7 @@ void cmShipCostsDraw(featom *atom, regionhandle region)
     sdword  numlines,startind=0;
 
     currentFont = fontCurrentGet();
-    fontMakeCurrent(cmDefaultFont);
+    fontMakeCurrent(cmShipListFont);
 
     feStaticRectangleDraw(region);                          //draw standard rectangle
     primRectSolid2(rect, CM_BackgroundColor);
@@ -2002,7 +2322,7 @@ sdword cmSelectShipType(regionhandle region, sdword yClicked)
     fonthandle currentFont;
     bool32 newline = FALSE;
 
-    currentFont = fontMakeCurrent(cmDefaultFont);
+    currentFont = fontMakeCurrent(cmShipListFont);
 
     numlines = 0;
 
@@ -2452,7 +2772,7 @@ void cmDrawArrow(regionhandle region, bool32 leftArrow)
 
     numlines = 0;
 
-    currentFont = fontMakeCurrent(cmDefaultFont);
+    currentFont = fontMakeCurrent(cmShipListFont);
 
     for (index=0; cmShipsAvailable[index].nJobs!=-1; index++)
     {
@@ -2603,7 +2923,7 @@ void cmShipNumbersDraw(featom *atom, regionhandle region)
     sdword  numlines,startind=0;
 
     currentFont = fontCurrentGet();
-    fontMakeCurrent(cmDefaultFont);
+    fontMakeCurrent(cmShipListFont);
 
     //if (region->flags == 0 || region->flags == RPE_DrawFunctionAdded)
     //{                                                       //if region not processed yet
@@ -3582,6 +3902,7 @@ sdword cmConstructionBegin(regionhandle region, smemsize ID, udword event, udwor
     if (piePointSpecMode != PSM_Idle)
     {
         piePointModeOnOff();
+        //dbgMessagef("pieplate toggle 1");
     }
 
     if (!cmScreensHandle)

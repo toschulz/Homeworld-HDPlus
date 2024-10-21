@@ -33,5 +33,6 @@ bool8 strFreeLanguage(void);
 void  strSetStringCB(char *directory, char *field, void *dataToFillIn);
 strGamesMessages strNameToEnum(char *string);
 void strSetCurKeyboard(void);
+void capitalize(char* input_str);
 
 #endif

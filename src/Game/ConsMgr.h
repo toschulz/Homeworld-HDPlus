@@ -163,4 +163,7 @@ void cmBuildTaskFunction(void);
 void LoadConsMgrDetermOptional(void);
 void SaveConsMgrDetermOptional(void);
 
+char* cmGetShipName(sdword ship_type);
+void cmTraverseFactoryLinkedList(color col);
+
 #endif

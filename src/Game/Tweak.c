@@ -119,6 +119,7 @@ color TW_SHIP_LINE_CLOSEST_COLOR;
 // distance readout tweakables
 color TW_DISTANCE_READOUT_COLOR;
 char  TW_DISTANCE_READOUT_FONT[64];
+sdword PIE_DIST_READOUT_Y_OFFSET = 10;
 
 // Cursor Text tweakables (mainrgn.c)
 color TW_CURSORTEXT_COLOR;
@@ -551,6 +552,7 @@ scriptEntry Tweaks[] =
     makeEntry(TW_SHIP_LINE_CLOSEST_COLOR, scriptSetRGBCB),
     makeEntry(TW_DISTANCE_READOUT_COLOR , scriptSetRGBCB),
     makeEntry(TW_DISTANCE_READOUT_FONT  , scriptSetStringCB),
+    makeEntry(PIE_DIST_READOUT_Y_OFFSET  , scriptSetSdwordCB),
     makeEntry(pieMaxMoveHorizontal      , scriptSetReal32CB),
     makeEntry(pieMaxMoveVertical        , scriptSetReal32CB),
     makeEntry(pieCircleSizeMax          , scriptSetReal32CB),
@@ -659,6 +661,9 @@ scriptEntry Tweaks[] =
     makeEntry(rmMarqueeOffColor         , scriptSetRGBCB),
 
     makeEntry(ioShipListFontName        , scriptSetStringCB),
+    makeEntry(ioShipListWidth        , scriptSetUdwordCB),
+    makeEntry(mrFormationFontName        , scriptSetStringCB),
+    makeEntry(mrBigFontName        , scriptSetStringCB),
     makeEntry(ioListTextColor           , scriptSetRGBCB),
     makeEntry(ioSelectedTextColor       , scriptSetRGBCB),
 
@@ -772,7 +777,7 @@ scriptEntry Tweaks[] =
     makeEntry(tweakBoostIfFlightMan  , scriptSetReal32CB),
 
     makeEntry(tpGameCreated.flag,                       scriptSetBitUword),
-//    makeEntry(tpGameCreated.numComputers,               scriptSetUbyteCB),
+    //makeEntry(tpGameCreated.numComputers,               scriptSetUbyteCB, 1),
 //    makeEntry(tpGameCreated.startingFleet,              scriptSetUbyteCB),
 //    makeEntry(tpGameCreated.bountySize,                 scriptSetUbyteCB),
 //    makeEntry(tpGameCreated.startingResources,          scriptSetUbyteCB),

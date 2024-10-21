@@ -426,6 +426,7 @@ void bobUpdateExtraCollBobInfo(LinkedList *list)
         numBigTargets = 0;
         numBigShips = 0;
         numSmallShips = 0;
+
         for (i=0;i<blobObjects->numSpaceObjs;i++)
         {
             spaceobj = blobObjects->SpaceObjPtr[i];

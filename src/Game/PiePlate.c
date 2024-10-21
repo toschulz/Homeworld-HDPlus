@@ -211,6 +211,7 @@ void piePointModeOnOff(void)
         piePlanePoint.z = pieHeightPoint.z = selCentrePoint.z;
         udLatestThingPush(pieCancelPointSpecMode, 0, NULL, 0);
     }
+    dbgMessagef("pieplate toggle 2");
 }
 
 /*-----------------------------------------------------------------------------
@@ -1319,6 +1320,7 @@ void piePointModeToggle(sdword bOn)
             {                                               //if height point not yet specified
                 pieHeightPoint = piePlanePoint;
             }
+            dbgMessagef("pieplate 3d on");
         }
         else
         {
@@ -1330,6 +1332,7 @@ void piePointModeToggle(sdword bOn)
     {
         tutGameMessage("Game_MoveXY");
         piePointSpecMode = PSM_XY;
+        dbgMessagef("pieplate 3d off");
     }
     piePointSpecMouseReset = TRUE;                           //reset location of mouse cursor
 }

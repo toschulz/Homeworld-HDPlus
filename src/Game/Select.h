@@ -57,8 +57,8 @@ extern real32 SEL_MinSelectionRadius;
 #define SEL_ShipHealthSolidGreen    colRGB(107 * 2 / 3, 227 * 2 / 3, 99 * 2 / 3)
 #define SEL_ShipHealthSolidYellow   colRGB(213 * 2 / 3, 215 * 2 / 3, 29 * 2 / 3)
 #define SEL_ShipHealthSolidRed      colRGB(213 * 2 / 3, 29 * 2 / 3, 29 * 2 / 3)
-#define SEL_FuelGreen               colRGB(44, 62, 249)
-#define SEL_FuelDarkGreen           colRGB(44 * 2 / 3, 62 * 2 / 3, 249 * 2 / 3)
+#define SEL_FuelGreen               colRGB(0, 157, 255)
+#define SEL_FuelDarkGreen           colRGB(0 * 2 / 3, 157 * 2 / 3, 255 * 2 / 3)
 #define SEL_FuelGreenFactor         0.2f
 #define SEL_ShipHealthGreenFactor   0.5f
 #define SEL_ShipHealthYellowFactor  0.25f
@@ -103,6 +103,7 @@ extern fonthandle selGroupFont0;
 extern fonthandle selGroupFont1;
 extern fonthandle selGroupFont2;
 extern fonthandle selGroupFont3;
+extern fonthandle tutTextFont1;
 
 //hot-key number stuff
 extern color selHotKeyNumberColor;

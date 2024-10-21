@@ -49,6 +49,7 @@
 #define LM_LODType                  0x0007      //mask for all types
 
 #define LOD_ScaleFactor             0.6f
+//#define LOD_ScaleFactor             0.01f
 
 /*=============================================================================
     Type definitions:

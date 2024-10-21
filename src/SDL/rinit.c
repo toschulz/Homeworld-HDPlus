@@ -28,6 +28,8 @@ extern unsigned int mainOutputCRC;
 extern unsigned int* devTable;
 extern int devTableLength;
 
+int display_refresh_rate;
+
 static rdevice* rDeviceList;
 static int nDevices;
 
@@ -398,6 +400,7 @@ bool32 rinEnumeratePrimary(rdevice* dev)
     Uint32 flags;
     int max_width;
     int i, j;
+    //int display_refresh_rate;
     const int display_index = 0;
 
     if (!dev)
@@ -423,6 +426,7 @@ bool32 rinEnumeratePrimary(rdevice* dev)
             dbgMessagef("Error in SDL_GetDisplayMode(): %d %s",i-1,SDL_GetError());
             return FALSE;
         }
+        display_refresh_rate = mode.refresh_rate;
         if (mode.w >= 640 && mode.h >= 480)
         {
             rinAddMode(dev, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format));

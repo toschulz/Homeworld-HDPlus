@@ -92,6 +92,11 @@ udword feTabStop = 1;
 sdword feMenuScreenMarginX = 0, feMenuScreenMarginY = 0;
 sdword feMenuOverlapMarginX = 0, feMenuOverlapMarginY = 0;
 
+uword FE_max_width = 640;
+uword FE_max_height = 480;
+
+bool32 homeworld_hdplus = FALSE;
+
 /*=============================================================================
     Private functions:
 =============================================================================*/
@@ -1553,12 +1558,18 @@ void feShutdown(void)
 ----------------------------------------------------------------------------*/
 sdword feResRepositionCentredX(sdword x)
 {
-    return (x + ((MAIN_WindowWidth - 640) / 2));
+    return (x + ((MAIN_WindowWidth - FE_max_width) / 2));
 }
 
 sdword feResRepositionCentredY(sdword y)
 {
-    return (y + ((MAIN_WindowHeight - 480) / 2));
+    return (y + ((MAIN_WindowHeight - FE_max_height) / 2));
+}
+
+real32 fe_scale_to_fit_factor_relic_screen()
+{
+	return min(((real32)(MAIN_WindowWidth)  / (real32)(FE_max_width)),                                \
+        ((real32)(MAIN_WindowHeight) / (real32)(FE_max_height)));
 }
 
 /*-----------------------------------------------------------------------------
@@ -1572,18 +1583,22 @@ sdword feResRepositionCentredY(sdword y)
 ----------------------------------------------------------------------------*/
 sdword feResRepositionScaledX(sdword x)
 {
-    real32 scale = FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN;
+    real32 scale = fe_scale_to_fit_factor_relic_screen();
+
+	dbgMessagef("FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN: %f", scale);
 
     return (x * scale)                                                    // resize
-         + ((MAIN_WindowWidth  - (FE_RELIC_SCREEN_WIDTH  * scale)) / 2);  // widescreen centring
+         + ((MAIN_WindowWidth  - (FE_max_width  * scale)) / 2);  // widescreen centring
 }
 
 sdword feResRepositionScaledY(sdword y)
 {
-    real32 scale = FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN;
+    real32 scale = fe_scale_to_fit_factor_relic_screen();
+
+	dbgMessagef("FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN: %f", scale);
     
     return (y * scale)                                                    // resize
-         + ((MAIN_WindowHeight - (FE_RELIC_SCREEN_HEIGHT * scale)) / 2);  // widescreen centring
+         + ((MAIN_WindowHeight - (FE_max_height * scale)) / 2);  // widescreen centring
 }
 
 /*-----------------------------------------------------------------------------
@@ -1649,8 +1664,8 @@ bool32 fePointOnScreen(sdword x, sdword y)
 {
     if ((x >= 0) &&
         (y >= 0) &&
-        (x < 640) &&
-        (y < 480))
+        (x < FE_max_width) &&
+        (y < FE_max_height))
     {
         return TRUE;
     }

@@ -117,7 +117,7 @@ scriptEntry pingTweaks[] =
 //    { "pingBobDoingCollisionBobs", scriptSetBool, &pingBattleBlobProperties.bobDoingCollisionBobs },
 
     { "pingTOLingerTime",       scriptSetReal32CB, &pingTOLingerTime },
-    
+
     END_SCRIPT_ENTRY
 };
 
@@ -156,7 +156,7 @@ DEFINE_TASK(pingUpdateTask)
     taskBegin;
 
     taskYield(0);
-    
+
     while (1)
     {
         thisNode = pingList.head;
@@ -419,9 +419,9 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
     thisNode = pingList.head;
 
     pingset = FALSE;
-    
+
     if (lastUniverseTime == universe.totaltimeelapsed)
-    {   
+    {
         // make sure we only emit one ping sound per univers time step!
         pingset = TRUE;
     }
@@ -513,10 +513,10 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
     {
         realMargin = primScreenToGLScaleX(viewPort->x0);
         fhSave = fontCurrentGet();                          //save the current font
-        fontMakeCurrent(selGroupFont2);                     // use a common, fairly small font
+        fontMakeCurrent(selGroupFont0);                     // use a common, fairly small font
         rowHeight = fontHeight("M");                        // used to space the legend
         yScreen = viewPort->y0 + rowHeight;                 //leave some space at the top to start
-        radius = primScreenToGLScaleX(rowHeight)/2;
+        radius = primScreenToGLScaleX(rowHeight)/1.25;
         xScreen = viewPort->x0 + (sdword)(rowHeight * 2.5);
 
         for (index = 0; index < PTO_NumberTOs; index++)
@@ -555,7 +555,7 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
             for (index = icon->nPoints - 1; index >= 0; index--)
             {
                primLineLoopPoint3F(realMargin + primScreenToGLX(rowHeight*1.5) + icon->loc[index].x * radius,
-                                          primScreenToGLY(yScreen + rowHeight/2) + icon->loc[index].y * radius);
+                                          primScreenToGLY(yScreen + rowHeight/2 + 3) + icon->loc[index].y * radius);
             }
             primLineLoopEnd2();
             yScreen += rowHeight + 1;

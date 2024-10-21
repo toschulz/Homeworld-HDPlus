@@ -880,3 +880,27 @@ strGamesMessages strNameToEnum(char *string)
     return(index);
 }
 
+void capitalize(char* input_str)
+{
+	int last_index_whitespace = FALSE;
+	for (int i = 0; i < strlen(input_str); i++)
+	{
+		if (i == 0)
+		{
+			input_str[i] = toupper(input_str[i]);
+		} else if (last_index_whitespace)
+		{
+			input_str[i] = toupper(input_str[i]);
+		} else
+		{
+			input_str[i] = tolower(input_str[i]);
+		}
+		if (input_str[i] == ' ')
+		{
+			last_index_whitespace = TRUE;
+		} else
+		{
+			last_index_whitespace = FALSE;
+		}
+    }
+}

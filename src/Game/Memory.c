@@ -1102,10 +1102,10 @@ noMoreFree:;
     }
     else
     {
-#if MEM_CLEAR_MEM                                           //clear the new block
+#if MEM_CLEAR_MEM
         // Note: When compiling with MEM_CLEAR_MEM this following clear will
         //       cause broken mesh pointers and crash the game in some circumstances.
-        //       Hence we disable the MEM_CLEAR_MEM for both retail and debug builds for now.        
+        //       Hence we disable the MEM_CLEAR_MEM for both retail and debug builds for now.
         memClearDword(newPointer, memClearSetting, length / sizeof(udword));
 #endif
     }

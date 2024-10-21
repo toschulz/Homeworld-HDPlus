@@ -46,6 +46,8 @@
 #define SM_CancelDispatch           "SM_CancelDispatch"
 #define SM_ToggleSensorsLevel       "SM_ToggleSensorsLevel"
 #define SM_Pan                      "SM_Pan"
+#define SM_Pause                    "SM_Pause"
+#define SM_Turbo                    "SM_Turbo"
 #define SM_CancelMoveOrClose        "SM_CancelMoveOrClose"
 
 #define SM_ViewportFilter           RPE_LeftClickButton | RPE_HoldLeft | RPE_RightClickButton | RPE_HoldRight | RPE_WheelUp | RPE_WheelDown
@@ -167,6 +169,10 @@
 #define SM_BlobRadiusMax            5.0f
 
 #define SM_FOWBlobUpdateTime        0.75        //how long the FOW sub-blobs last
+
+#define SM_SMALL_POINT              1.5f
+#define SM_LARGE_POINT              3.0f
+#define SM_RESOURCES_POINT          3.0f
 
 /*=============================================================================
     Typedefs:

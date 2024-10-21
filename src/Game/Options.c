@@ -35,6 +35,7 @@
 #include "UIControls.h"
 #include "utility.h"
 
+
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
 #endif
@@ -159,8 +160,19 @@ bool32 opEqualizerToggled;
 sword opKeySelected=-1;
 sword opKeyBeingDefined=-1;
 uword opKeyDetour = 0;
+
+udword op_fighter_formation_size = 7;
+udword op_fighter_formation_type = DELTA_FORMATION;
+udword op_corv_formation_size = 5;
+udword op_corv_formation_type = DELTA3D_FORMATION;
+udword op_frigate_formation_size = 9;
+udword op_frigate_formation_type = WALL_FORMATION;
+udword op_capital_formation_size = 4;
+udword op_capital_formation_type = WALL_FORMATION;
+
 regionhandle keyboardregion = NULL;
 regionhandle drawnumchannels = NULL;
+regionhandle draw_time_comp_factor_label = NULL;
 //taskhandle opHighlightTaskHandle;
 BabyCallBack    *opHighlightBaby=NULL;
 BabyCallBack    *opSmoothiesBaby=NULL;
@@ -360,6 +372,7 @@ sdword opSpeakerSettings[3][NUM_EQ_BANDS] =
 
 
 fonthandle opKeyboardFont;
+fonthandle opModrenFont;
 
 
 //use #define to modify a variable directly without modifying function
@@ -460,8 +473,8 @@ sdword opNumEffects;
 sdword opSaveNumEffects;
 
 // Game Options - Default Values
-udword opShipRecoil = 0;
-udword opPauseOrders = 0;
+udword opShipRecoil = 1;
+udword opPauseOrders = 1;
 
 textentryhandle opAutodockFuelEntryBox     = NULL;
 textentryhandle opAutodockHealthEntryBox   = NULL;
@@ -541,6 +554,7 @@ void opDirtyResListWindow(void)
 void opOptionsInit(void)
 {
     opKeyboardFont = frFontRegister("hw_eurosecond_11.hff");
+    opModrenFont = frFontRegister("arial_12.hff");
     opNumEffects = etgHistoryScalar - etgHistoryScalarMin;
     kbInitKeyBindings();
 }
@@ -560,7 +574,14 @@ void opSetDetailThreshold(void)
 
     targetPolys = OP_DETAIL_DIVISOR * opDetailThresholdVal;
 
+	//float d1 = (float)(opDetailThresholdVal+1-50)/50;
+	//targetPolys = ((float)200000) * ((float)opDetailThresholdVal/(float)100);
+	//targetPolys = ((float)500000) * d1;
+	//dbgMessagef("targetPolys: %d, opDetailThresholdVal: %d, d1: %f", targetPolys, opDetailThresholdVal, d1);
+
     alodSetTargetPolys(targetPolys, polyDelta);
+
+
 }
 
 /*-----------------------------------------------------------------------------
@@ -1968,6 +1989,7 @@ void opDrawNumChannels(featom *atom, regionhandle region)
 {
     fonthandle currentFont;
     sdword min, max;
+	extern fonthandle selGroupFont1;
 
     if (FELASTCALL(atom))
     {
@@ -1977,7 +1999,7 @@ void opDrawNumChannels(featom *atom, regionhandle region)
 
     drawnumchannels = region;
 
-    currentFont = fontMakeCurrent(opKeyboardFont);
+    currentFont = fontMakeCurrent(selGroupFont1);
 
     primRectSolid2(&region->rect, colBlack);
 
@@ -1986,6 +2008,27 @@ void opDrawNumChannels(featom *atom, regionhandle region)
     fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%u", opNumChannels + min);
 
     fontMakeCurrent(currentFont);
+    //dbgMessagef("opDrawNumChannels");
+}
+
+void opDrawTimeCompressionFactor(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        //drawnumchannels = NULL;
+        return;
+    }
+
+    //drawnumchannels = region;
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%ux", turboTimeCompressionFactor);
+    fontMakeCurrent(currentFont);
+//    dbgMessagef("opDrawTimeCompressionFactor");
 }
 
 void opAutoChannels(char* name, featom* atom)
@@ -2066,6 +2109,27 @@ udword opMouseSensitivityProcess(regionhandle reg, sdword ID, udword event, udwo
 
     opMouseSens = shandle->value;
     cameraSensitivitySet(opMouseSens);
+    return (0);
+}
+
+udword opTimeCompFactorProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    //dbgMessage(">");
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    turboTimeCompressionFactor = (int)(17*turbo_slider_factor);
+
+    if (turboTimeCompressionFactor <= 2)
+    {
+        turboTimeCompressionFactor = 2;
+    }
+
+    //turboTimeCompressionFactor = shandle->value;
+
+    //dbgMessagef("turboTimeCompressionFactor: %d", turboTimeCompressionFactor);
     return (0);
 }
 
@@ -2356,6 +2420,8 @@ void opDetailThreshold(char* name, featom* atom)
         shandle = (sliderhandle)atom->region;
         shandle->maxvalue = 51;
         shandle->value = opDetailThresholdVal - 50;
+		//shandle->maxvalue = 51;
+        //shandle->value = opDetailThresholdVal - 50;
 
         f = regFilterSet(atom->region, 0);
         regFilterSet(atom->region, f | RPE_HoldLeft);
@@ -3239,6 +3305,728 @@ void opInfoOverlay(char* name, featom* atom)
         ioDisable();
 }
 
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opPauseOrdersCB(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (opPauseOrders)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        opPauseOrders = 1;
+    }
+    else
+    {
+        opPauseOrders = 0;
+    }
+     dbgMessagef("opPauseOrders: %d",opPauseOrders);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opIntoVideosCB(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (aviPlayIntros)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        aviPlayIntros = 1;
+    }
+    else
+    {
+        aviPlayIntros = 0;
+    }
+	dbgMessagef("opIntoVideosCB: %d",aviPlayIntros);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opRUEndMission(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (spCollectResourcesAtEndOfMission)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        spCollectResourcesAtEndOfMission = 1;
+    }
+    else
+    {
+        spCollectResourcesAtEndOfMission = 0;
+    }
+	dbgMessagef("opRUEndMission: %d",spCollectResourcesAtEndOfMission);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opShipRecoilCP(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (opShipRecoil)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        opShipRecoil = 1;
+    }
+    else
+    {
+        opShipRecoil = 0;
+    }
+	dbgMessagef("opShipRecoilCP: %d",opShipRecoil);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opShipsAlwaysUseOwnerColorsCB(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (utyShipsAlwaysUseOwnerColors)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        utyShipsAlwaysUseOwnerColors = 1;
+    }
+    else
+    {
+        utyShipsAlwaysUseOwnerColors = 0;
+    }
+	dbgMessagef("opShipsAlwaysUseOwnerColorsCB: %d",utyShipsAlwaysUseOwnerColors);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opExtendedInfoOverlayCB(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (ext_info_overlay)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        ext_info_overlay = 1;
+    }
+    else
+    {
+        ext_info_overlay = 0;
+    }
+	dbgMessagef("opExtendedInfoOverlayCB: %d",ext_info_overlay);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opDisableNlipsCB
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opDisableNlipsCB(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (disableNLIPS)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        disableNLIPS = 1;
+		if (gameIsRunning)
+		{
+			updateNLIPSStatus();
+		}
+	}
+    else
+    {
+        disableNLIPS = 0;
+		if (gameIsRunning)
+		{
+			updateNLIPSStatus();
+		}
+    }
+	dbgMessagef("opDisableNlipsCB: %d",disableNLIPS);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opPauseOrders
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opOpenGLMSAACB(char* name, featom* atom)
+{
+    //dbgMessagef("opPauseOrdersCB");
+    if (FEFIRSTCALL(atom))
+    {
+        if (enableMSAA)
+        {
+            bitSet(atom->status, FAS_Checked);
+        }
+        else
+        {
+            bitClear(atom->status, FAS_Checked);
+        }
+        return;
+    }
+    if (bitTest(atom->status, FAS_Checked))
+    {
+        enableMSAA = 1;
+    }
+    else
+    {
+        enableMSAA = 0;
+    }
+	dbgMessagef("opOpenGLMSAACB: %d",enableMSAA);
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : opturboTimeCompFactorCB
+    Description : Processes toggling of Info overlay
+    Inputs      : void
+    Outputs     :
+    Return      : Nothing
+----------------------------------------------------------------------------*/
+void opturboTimeCompFactorCB(char* name, featom* atom)
+{
+    //dbgMessagef("opturboTimeCompFactorCB");
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        //shandle->min
+        shandle->maxvalue = 100;
+
+        if (turboTimeCompressionFactor <= 2)
+        {
+            turboTimeCompressionFactor = 2;
+        }
+        float slider_factor = (float)turboTimeCompressionFactor/(float)16;
+        int slider_value = slider_factor*100;
+
+        //dbgMessagef("turboTimeCompressionFactor: %d, slider_factor: %f, slider_value: %d",turboTimeCompressionFactor, slider_factor, slider_value);
+        //int slider_value = turboTimeCompressionFactor;
+        //dbgMessagef("slider_value: %d", slider_value);
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opTimeCompFactorProcess;
+    }
+}
+
+udword opFighterFormationSizeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_fighter_formation_size = (int)(15*turbo_slider_factor);
+    op_fighter_formation_size += 2;
+    return (0);
+}
+
+void opFighterFormationSizeCP(char* name, featom* atom)
+{
+    //dbgMessagef("opturboTimeCompFactorCB");
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        //shandle->min
+        shandle->maxvalue = 100;
+
+        //op_fighter_formation_size -= 2;
+        float slider_factor = (float)op_fighter_formation_size/(float)16;
+        int slider_value = slider_factor*100;
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opFighterFormationSizeCPProcess;
+    }
+}
+
+void opFighterFormationSizeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        //drawnumchannels = NULL;
+        return;
+    }
+
+    //drawnumchannels = region;
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%u", op_fighter_formation_size);
+    fontMakeCurrent(currentFont);
+    //dbgMessagef("opFighterFormationSizeDrawCP: %d ship(s)", op_fighter_formation_size);
+}
+
+udword opFighterFormationTypeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_fighter_formation_type = (int)(6*turbo_slider_factor);
+    /*if (op_fighter_formation_type < 1)
+    {
+        op_fighter_formation_type = 1;
+    }*/
+    //op_fighter_formation_type += 2;
+    return (0);
+}
+
+void opFighterFormationTypeCP(char* name, featom* atom)
+{
+    //dbgMessagef("opturboTimeCompFactorCB");
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        //shandle->min
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_fighter_formation_type/(float)5;
+        int slider_value = slider_factor*100;
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opFighterFormationTypeCPProcess;
+    }
+}
+
+void opFighterFormationTypeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        //drawnumchannels = NULL;
+        return;
+    }
+
+    //drawnumchannels = region;
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%s", TypeOfFormationToNiceStr(op_fighter_formation_type));
+    fontMakeCurrent(currentFont);
+    //dbgMessagef("opFighterFormationSizeDrawCP: %d", op_fighter_formation_type);
+}
+
+//Corvette Size Callbacks
+udword opCorvFormationSizeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_corv_formation_size = (int)(15*turbo_slider_factor);
+    op_corv_formation_size += 2;
+    return (0);
+}
+void opCorvFormationSizeCP(char* name, featom* atom)
+{
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_corv_formation_size/(float)16;
+        int slider_value = slider_factor*100;
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opCorvFormationSizeCPProcess;
+    }
+}
+void opCorvFormationSizeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        return;
+    }
+
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%u", op_corv_formation_size);
+    fontMakeCurrent(currentFont);
+}
+
+//Corvette Type Callbacks
+udword opCorvFormationTypeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_corv_formation_type = (int)(6*turbo_slider_factor);
+    return (0);
+}
+void opCorvFormationTypeCP(char* name, featom* atom)
+{
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_corv_formation_type/(float)5;
+        int slider_value = slider_factor*100;
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opCorvFormationTypeCPProcess;
+    }
+}
+void opCorvFormationTypeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        return;
+    }
+
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%s", TypeOfFormationToNiceStr(op_corv_formation_type));
+    fontMakeCurrent(currentFont);
+}
+
+//Frigate Size Callbacks
+udword opFrigFormationSizeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_frigate_formation_size = (int)(15*turbo_slider_factor);
+    op_frigate_formation_size += 2;
+    return (0);
+}
+void opFrigateFormationSizeCP(char* name, featom* atom)
+{
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_frigate_formation_size/(float)16;
+        int slider_value = slider_factor*100;
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opFrigFormationSizeCPProcess;
+    }
+}
+void opFrigateFormationSizeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        return;
+    }
+
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%u", op_frigate_formation_size);
+    fontMakeCurrent(currentFont);
+}
+
+//Frigate Type Callbacks
+udword opFrigateFormationTypeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_frigate_formation_type = (int)(6*turbo_slider_factor);
+    //dbgMessagef("");
+    return (0);
+}
+void opFrigateFormationTypeCP(char* name, featom* atom)
+{
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_frigate_formation_type/(float)5;
+        int slider_value = slider_factor*100;
+
+        //dbgMessagef("opFrigateFormationTypeCP(), slider_factor: %f, slider_value: %d, op_frigate_formation_type: %d", slider_factor, slider_value, op_frigate_formation_type);
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opFrigateFormationTypeCPProcess;
+    }
+}
+void opFrigateFormationTypeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        return;
+    }
+
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%s", TypeOfFormationToNiceStr(op_frigate_formation_type));
+    fontMakeCurrent(currentFont);
+}
+
+//Capital Type Callbacks
+udword opCapitalFormationTypeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_capital_formation_type = (int)(6*turbo_slider_factor);
+    //dbgMessagef("");
+    return (0);
+}
+void opCapitalFormationTypeCP(char* name, featom* atom)
+{
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_capital_formation_type/(float)5;
+        int slider_value = slider_factor*100;
+
+        //dbgMessagef("opFrigateFormationTypeCP(), slider_factor: %f, slider_value: %d, op_capital_formation_type: %d", slider_factor, slider_value, op_capital_formation_type);
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opCapitalFormationTypeCPProcess;
+    }
+}
+void opCapitalFormationTypeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        return;
+    }
+
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%s", TypeOfFormationToNiceStr(op_capital_formation_type));
+    fontMakeCurrent(currentFont);
+}
+
+//Capital Size Callbacks
+udword opCapitalFormationSizeCPProcess(regionhandle reg, sdword ID, udword event, udword data)
+{
+    featom *atom = reg->atom;
+    sliderhandle shandle = (sliderhandle)atom->region;
+
+    float turbo_slider_value = shandle->value;
+    float turbo_slider_factor = turbo_slider_value/100;
+    op_capital_formation_size = (int)(15*turbo_slider_factor);
+    op_capital_formation_size += 2;
+    return (0);
+}
+void opCapitalFormationSizeCP(char* name, featom* atom)
+{
+    udword f;
+    sliderhandle shandle;
+    if (FEFIRSTCALL(atom))
+    {
+        shandle = (sliderhandle)atom->region;
+        shandle->maxvalue = 100;
+
+        float slider_factor = (float)op_capital_formation_size/(float)16;
+        int slider_value = slider_factor*100;
+
+        shandle->value = slider_value;
+
+        f = regFilterSet(atom->region, 0);
+        regFilterSet(atom->region, f | RPE_HoldLeft);
+
+        shandle->processFunction  = (uicfunction) opCapitalFormationSizeCPProcess;
+    }
+}
+void opCapitalFormationSizeDrawCP(featom *atom, regionhandle region)
+{
+    fonthandle currentFont;
+    sdword min, max;
+
+    if (FELASTCALL(atom))
+    {
+        return;
+    }
+
+    currentFont = fontMakeCurrent(opModrenFont);
+    primRectSolid2(&region->rect, colBlack);
+    soundGetVoiceLimits(&min, &max);
+    fontPrintf (region->rect.x0, region->rect.y0, colRGB(255,200,0), "%u", op_capital_formation_size);
+    fontMakeCurrent(currentFont);
+}
+
 void opTaskbarUp(char* name, featom* atom)
 {
 
@@ -3565,10 +4353,11 @@ void opNoPalDraw(featom* atom, regionhandle region)
     fonthandle oldfont;
     char buf[16];
     color c;
-    extern fonthandle ghDefaultFont;
+    //extern fonthandle ghDefaultFont;
+	extern fonthandle selGroupFont1;
 
     primRectSolid2(&region->rect, colBlack);
-    oldfont = fontMakeCurrent(ghDefaultFont);
+    oldfont = fontMakeCurrent(selGroupFont1);
 
     sprintf(buf, "%dMB", opNoPalMB);
     c = colRGB(255,200,0);

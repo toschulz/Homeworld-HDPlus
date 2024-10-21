@@ -42,6 +42,7 @@
 #include "utility.h"
 
 #ifdef _WIN32
+    //#define WIN32_LEAN_AND_MEAN
     #include <windows.h>
 #endif
 
@@ -489,6 +490,8 @@ void mousePositionSet(sdword x, sdword y)
     }
 #endif
 */
+
+    //dbgMessagef("mouseCursorXPositionX: %f, mouseCursorXPositionY: %f", x, y);
     mouseCursorXPosition = x;                               //set internal mouse location
     mouseCursorYPosition = y;
     /*
@@ -1859,6 +1862,7 @@ void mousePoll(void)
     {
         SDL_GetMouseState(&mouseCursorXPosition, &mouseCursorYPosition);
     }
+    //dbgMessagef("mouseCursorXPosition: %d, mouseCursorYPosition: %d",mouseCursorXPosition,  mouseCursorYPosition);
     //perform client area enter/exit logic to hide/show Windows system cursor
     /*
     if (primPointInRectXY2(&clientRect, mousePoint.x, mousePoint.y))

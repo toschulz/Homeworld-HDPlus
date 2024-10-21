@@ -109,6 +109,7 @@ extern real32 pieCircleSizeMin;
 
 extern color  TW_DISTANCE_READOUT_COLOR;
 extern char   TW_DISTANCE_READOUT_FONT[];
+extern sdword PIE_DIST_READOUT_Y_OFFSET;
 
 extern color  TW_CURSORTEXT_COLOR;
 extern real32 TW_CURSORTEXT_DELAY_TIME;
@@ -219,6 +220,9 @@ extern color  rmMarqueeOffColor;
 
 // Info Overlay Tweakables
 extern char   ioShipListFontName[];
+extern char   mrFormationFontName[];
+extern char   mrBigFontName[];
+extern sdword   ioShipListWidth;
 extern color  ioListTextColor;
 extern color  ioSelectedTextColor;
 

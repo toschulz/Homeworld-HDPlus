@@ -6531,7 +6531,12 @@ sdword etgEvery(Effect *effect, struct etgeffectstatic *stat, ubyte *opcode)
     timeElapsed = (udword)(etgTimeElapsed * ETG_FrameScale);
     totalTime = (udword)(etgTotalTimeElapsed * ETG_FrameScale);
 
-    if (totalTime % time < timeElapsed)
+    if (time == 0)
+    {
+        dbgMessagef("etgEvery(), time == 0");
+    }
+
+    if (time != 0 && totalTime % time < timeElapsed)
     {                                                       //if this is the frame
         return(sizeof(etgbeforeafterat));                   //just skip over this opcode
     }
@@ -6553,7 +6558,11 @@ sdword etgEveryVar(Effect *effect, struct etgeffectstatic *stat, ubyte *opcode)
     timeElapsed = (udword)(etgTimeElapsed * ETG_FrameScale);
     totalTime = (udword)(etgTotalTimeElapsed * ETG_FrameScale);
 
-    if (totalTime % time <= timeElapsed + 1)
+    if (time == 0)
+    {
+        dbgMessagef("etgEveryVar(), time == 0");
+    }
+    if (time != 0 && totalTime % time <= timeElapsed + 1)
     {                                                       //if this is the frame
         return(sizeof(etgbeforeafterat));                   //just skip over this opcode
     }
@@ -8049,7 +8058,8 @@ udword etgFloat2Int(real32 f)
 udword etgInt2Float(sdword f)
 {
     real32 retVal = (real32)f;
-    return Real32ToUdword(retVal);
+    //return(TreatAsUdword(retVal));
+	return Real32ToUdword(retVal);
 }
 
 udword etgInts2Color(sdword red, sdword green, sdword blue)

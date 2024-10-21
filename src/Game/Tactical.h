@@ -32,8 +32,11 @@
 =============================================================================*/
 #define TO_MinimumScreenSize     4
 #define TO_MineMinimumScreenSize 0.5
-#define TO_VertexScanFactorX    2.0f
-#define TO_VertexScanFactorY    (-2.0f * 640.0f / 480.0f)
+
+//Moved to Tractial.c to allow for display aspect ratios other than 4:3
+//#define TO_VertexScanFactorY    (-2.0f * 3440.0f / 1440.0f)
+//#define TO_VertexScanFactorX    2.0f
+
 #define TO_NumPlayers           8
 
 #define TO_MinFadeSize          0.06f                 //size of ship where fadeout starts (in fractions of the size of screen)
@@ -41,7 +44,7 @@
 #define TO_FadeStart            TO_MinFadeSize + 0.01f//where the fading actually begins
 #define TO_FadeRate             (255.0f / (TO_MaxFadeSize - TO_MinFadeSize))//rate at which the fading happens
 
-#define TO_TextColor            colRGB(64, 64, 255)
+#define TO_TextColor            colRGB(0, 162, 255)
 #define TO_IconColorFade        2
 
 /*=============================================================================

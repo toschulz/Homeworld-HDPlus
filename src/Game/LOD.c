@@ -282,7 +282,9 @@ lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship)
         lodScaleFactor = lodDebugScaleFactor;
     }
 #endif
-    if (distance > info->level[obj->currentLOD].bOff * lodScaleFactor)
+	float d1 = (float)(opDetailThresholdVal+1-50)/50;
+	lodScaleFactor = d1 * 2;
+	if (distance > info->level[obj->currentLOD].bOff * lodScaleFactor)
     {                                                       //if drop a level of detail
         do
         {

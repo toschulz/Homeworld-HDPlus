@@ -78,6 +78,23 @@ extern sdword opCPUAttack;
 
 extern udword opPauseOrders;
 extern udword opShipRecoil;
+extern udword aviPlayIntros;
+extern bool32 spCollectResourcesAtEndOfMission;
+//extern bool32 opOpenglMSAA;
+extern bool32 enableMSAA;
+extern bool32 disableNLIPS;
+
+extern udword op_fighter_formation_size;
+extern udword op_fighter_formation_type;
+
+extern udword op_corv_formation_size;
+extern udword op_corv_formation_type;
+
+extern udword op_frigate_formation_size;
+extern udword op_frigate_formation_type;
+
+extern udword op_capital_formation_size;
+extern udword op_capital_formation_type;
 
 void opOptionsSaveCustomEffectsSettings(void);
 

@@ -33,8 +33,16 @@
 #endif
 
 
-
+extern fonthandle selGroupFont0;
 extern fonthandle selGroupFont2;
+
+extern sdword mainWindowTotalWidth;
+extern sdword mainWindowTotalHeight;
+
+//Moved from Tractial.h to allow for display aspect ratios other than 4:3
+float tactical_scale_factor = 2.0f;
+float TO_VertexScanFactorY = 0;
+float TO_VertexScanFactorX = 0;
 
 //located in mainrgn.c
 void toMoveLineDraw(ShipPtr ship, real32 scale);
@@ -106,8 +114,13 @@ void toStartup(void)
 {
     sdword index;
 
+    tactical_scale_factor = 1.25f;
+    TO_VertexScanFactorY = 0;
+    TO_VertexScanFactorX = tactical_scale_factor;
+
     mineMineTOSize = primScreenToGLScaleX(TO_MineMinimumScreenSize);
     toMinimumSize  = primScreenToGLScaleX(TO_MinimumScreenSize);
+    TO_VertexScanFactorY = (-tactical_scale_factor * mainWindowTotalWidth / mainWindowTotalHeight);
 
     for (index = 0; index < (NUM_CLASSES+1); index++)
     {                                                       //set all icons to default
@@ -434,6 +447,7 @@ nextnode:
 ----------------------------------------------------------------------------*/
 void toLegendDraw(void)
 {
+    //dbgMessagef("toLegendDraw called");
     sdword rowHeight, shipClass, pl, y, index, x;
     toicon *icon;
     color col;
@@ -442,11 +456,11 @@ void toLegendDraw(void)
     rectangle playerColorRect;
 
     fhSave = fontCurrentGet();                  //save the current font
-    fontMakeCurrent(selGroupFont2);  // use a common, fairly small font
+    fontMakeCurrent(selGroupFont0);  // use a common, fairly small font
 
     rowHeight = fontHeight(" "); // used to space the legend
     y = rowHeight;
-    radius = primScreenToGLScaleX(rowHeight)/2;
+    radius = primScreenToGLScaleX(rowHeight)/1.25;
     x = (sdword)(rowHeight * 2.5);
 
 #if TO_STANDARD_COLORS

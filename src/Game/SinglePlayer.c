@@ -148,7 +148,7 @@ bool32 singlePlayerHyperspacingInto     = FALSE;
 bool32 spHoldHyperspaceWindow           = FALSE;
 bool32 spBinkPlay                       = FALSE;
 bool32 triggerNIS                       = FALSE;
-bool32 spCollectResourcesAtEndOfMission = FALSE;
+bool32 spCollectResourcesAtEndOfMission = TRUE;
 
 real32 spFleetModifier = 0.0f;
 real32 spFleetStr      = 0.0f;
@@ -760,7 +760,7 @@ void spShipsRemainingDrawCB(featom *atom, regionhandle region)
     sprintf(numstr,"%d",singlePlayerGameInfo.rollcallShipsRemaining);
 
     fhSave = fontCurrentGet();                              //save the current font
-    fontMakeCurrent(selGroupFont2);             //select the appropriate font
+    fontMakeCurrent(selGroupFont1);             //select the appropriate font
     fontPrintCentreCentreRectangle(&region->rect,colWhite,numstr);
     fontMakeCurrent(fhSave);
 }
@@ -773,7 +773,7 @@ void spShipsDockedDrawCB(featom *atom, regionhandle region)
     sprintf(numstr,"%d",singlePlayerGameInfo.rollcallShipsDocked);
 
     fhSave = fontCurrentGet();                  //save the current font
-    fontMakeCurrent(selGroupFont2);             //select the appropriate font
+    fontMakeCurrent(selGroupFont1);             //select the appropriate font
     fontPrintCentreCentreRectangle(&region->rect,colWhite,numstr);
     fontMakeCurrent(fhSave);
 }

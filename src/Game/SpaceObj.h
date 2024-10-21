@@ -648,6 +648,7 @@ typedef struct ShipStaticInfo
     udword multipleEngines;
 
     real32 scaleCap;            //minimum sizing cap, which prevents a ship from getting too small
+    real32 scaleCap_backup;            //minimum sizing cap, which prevents a ship from getting too small
 
     sdword hierarchySize;       //size of the ship hierarchy
     madstatic *madStatic;       //mesh animation binding and animation data
@@ -665,6 +666,7 @@ typedef struct ShipStaticInfo
     real32 trailRibbonAdjust[MAX_NUM_TRAILS];
     real32 trailLength[MAX_NUM_TRAILS];
     real32 trailScaleCap[MAX_NUM_TRAILS];
+	real32 trailScaleCap_backup[MAX_NUM_TRAILS];
     real32 trailSpriteRadius[MAX_NUM_TRAILS];
     real32 trailSpriteOffset[MAX_NUM_TRAILS];
 

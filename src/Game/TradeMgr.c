@@ -51,6 +51,7 @@
 #include "Vector.h"
 
 #ifdef _WIN32
+    //#define WIN32_LEAN_AND_MEAN
     #include <windows.h>
 #endif
 
@@ -605,8 +606,7 @@ sdword tmSelectAvailable(regionhandle region, sdword ID, udword event, udword da
     index = tmSelectTechType(region, mouseCursorY());
 
     dbgMessagef("Selected %i",index);
-
-    if (index < 0) return 0;
+	if (index < 0) return 0;
 
     price = (tmTechPrice[index] * tmPriceScale) / 100;
 

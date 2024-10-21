@@ -20,7 +20,7 @@
     Definitions:
 =============================================================================*/
 #define GP_ScreenName           "Load_game"
-#define GP_ListFont             "Arial_12.hff"
+#define GP_ListFont             "to_1.hff"
 #define GP_NameFont             "Arial_12.hff"
 #define GP_NonSelectedColor     colRGB(0, 75, 120)
 #define GP_SelectedTabbedColor  colRGB(1, 170, 221)

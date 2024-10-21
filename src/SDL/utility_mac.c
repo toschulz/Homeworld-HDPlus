@@ -1471,6 +1471,8 @@ void gameStart(char *loadfilename)
     uword i;
     //udword numCompPlayers = 0;
 
+	//reloadStaticShipInfo();
+
 #if MAIN_CDCheck
     if (mainCDCheckEnabled)
     {

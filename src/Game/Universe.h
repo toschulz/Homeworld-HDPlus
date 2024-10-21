@@ -239,6 +239,7 @@ extern uword RacesAllowedForGivenShip[TOTAL_NUM_SHIPS];
 extern ubyte turboTimeCompressionFactor;
 extern bool32 universeTurbo;
 extern bool32 universePause;
+extern bool32 ext_info_overlay;
 
 extern sdword cdMaxShipsAllowed;            // max number of ships allowed
 extern sdword cdLimitCaps[TOTAL_NUM_SHIPS]; // max number of ships per player allowed
@@ -248,6 +249,9 @@ extern bool32   cdEnabled;                    // flag specifying whether unit ca
 extern lodinfo *defaultlod;                 // remove later when all stubs are taken out
 extern void *defaultmex;                    // remove later when all stubs are taken out
 extern bool32 universeForceDefaultShip;       //flag for forcing ships to be loaded as rave borgs
+
+extern bool8 nlips_msg_flag;
+extern time_t nlips_msg_ts;
 
 #if UNIV_SHIP_LOADFREE_LOG
 extern bool32 univLoadFreeLog;
@@ -277,6 +281,9 @@ void universeInit(void);
 void universeClose(void);
 void universeReset(void);
 void universeSetZeroPlayers(void);
+void reloadShipTrails();
+void updateNLIPSStatus(void);
+void ShowNLIPSMSG();
 void universeStaticInit(void);
 void universeStaticClose(void);
 DECLARE_TASK(universeUpdateTask);

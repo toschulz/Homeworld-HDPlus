@@ -9,6 +9,9 @@
 #ifndef ___RINIT_H
 #define ___RINIT_H
 
+//int display_refresh_rate;
+extern int display_refresh_rate;
+
 typedef struct rmode
 {
     int width, height;

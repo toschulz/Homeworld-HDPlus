@@ -170,6 +170,7 @@ bool32 GLOBAL_NO_TEXTURES = FALSE;
 #endif
 
 bool32 enableMSAA = FALSE;
+bool32 disableNLIPS = FALSE;
 
 // turn fullscreen off when debugging so that if the debugger kicks in
 // after a crash you don't find yourself locked out and have to reboot...
@@ -240,7 +241,7 @@ bool32 noMinimizeAltTab = FALSE;
 //options altered by a password function:
 bool32 mainCDCheckEnabled = TRUE;
 
-char networkVersion[MAX_NETWORKVERSION_STRING_LEN] = "HomeworldSDL";
+char networkVersion[MAX_NETWORKVERSION_STRING_LEN] = "HomeworldSDL-HDPlus";
 
 char minorBuildVersion[] = "1.2.0";
 
@@ -1560,6 +1561,8 @@ bool32 mainLoadGL(char* data)
 {
     dbgMessage("-- load OpenGL --");
 
+
+    //dbgMessage(saveMAIN_WindowHeight);
     if (bMustFree)
     {
         mainCloseRender();
@@ -1971,6 +1974,10 @@ static bool32 InitWindow ()
 
     mainWindowTotalWidth  = MAIN_WindowWidth  + mainWidthAdd;
     mainWindowTotalHeight = MAIN_WindowHeight + mainHeightAdd;
+
+    // char res_str[32];
+    // sprintf(res_str, "%d by %d", mainWindowTotalWidth, mainWindowTotalHeight);
+    // dbgMessage(res_str);
 
     /* Window created in renderer initialization.. */
 

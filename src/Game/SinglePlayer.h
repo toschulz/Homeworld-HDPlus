@@ -168,7 +168,7 @@ extern SinglePlayerGameInfo singlePlayerGameInfo;
 extern bool32 singlePlayerGameLoadNewLevelFlag;
 extern bool32 hyperspaceFails;
 extern bool32 singlePlayerHyperspacingInto;
-extern bool32 spCollectResourcesAtEndOfMission;
+//extern bool32 spCollectResourcesAtEndOfMission;
 
 void spHyperspaceButtonPushed(void);
 
@@ -220,7 +220,7 @@ ShipSinglePlayerGameInfo *spNewShipSinglePlayerGameInfo(void);
 #define SPLOCKOUT_DESELECT  4
 #define SPLOCKOUT_EVERYTHING    (SPLOCKOUT_MOUSE+SPLOCKOUT_MR+SPLOCKOUT_DESELECT)
 
-void spMainScreen(void);
+void spMainScreen();
 void spLockout(udword flags);
 void spMainScreenAndLockout(udword flags);
 void spUnlockout(void);

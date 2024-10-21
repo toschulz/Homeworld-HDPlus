@@ -250,7 +250,7 @@ real32 MemsizeToReal32(memsize a);
         (a) ^= (b);     \
         (b) ^= (a);     \
         (a) ^= (b);
-//floating-point swap
+
 #define swapReal32(a, b) swapReal32_internal(&(a), &(b))
 static inline void swapReal32_internal(real32 *a, real32 *b)
 {
@@ -258,6 +258,7 @@ static inline void swapReal32_internal(real32 *a, real32 *b)
     *a = *b;
     *b = temp;
 }
+
 
 #define strdollar(x) #x
 

@@ -188,13 +188,17 @@ static void Draw_Stretch (int x, int y, int w, int h, int cols, int rows, char *
 
     if (!texinit) {
         //unsigned int i;
-        unsigned char blank[tex_width*tex_height*3];
+        //unsigned char blank[tex_width*tex_height*3];
+
+        unsigned char* blank = av_malloc(tex_width*tex_height*3);
+
         memset(blank, 0, tex_width*tex_height*3);
 
         glGenTextures(1, &strtex);
         glBindTexture(GL_TEXTURE_2D, strtex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, blank);
         texinit = 1;
+        av_free(blank);
     } else {
         // In principle we don't need the else case but for some reason doing
         // the glTexImage2D call and immediately after the glTexSubImage2D call causes
@@ -221,7 +225,7 @@ void aviDisplayFrame( AVFrame *pFrameRGB, int w, int h )
     animAviSetup(TRUE);
 
     // lets keep the aspect ratio of the video and draw it centered with max height or width
-    float contentAspect = 1.85f; // actual video content aspect ratio without the letter boxing
+    float contentAspect = 1.77f; // actual video content aspect ratio without the letter boxing
     float videoAspect = (float)w / (float)h;
     float screenAspect = (float)MAIN_WindowWidth / (float)MAIN_WindowHeight;
 
@@ -376,7 +380,7 @@ dbgMessagef("aviPlayLoop: frameFinished=%d  packet.data=%x   packet.size=%d ", f
             frame++;
 
             // Videos are played at 15 fps, try to keep framse in sync to that
-            while (SDL_GetTicks() < (start_time + ((frame * 1000) / 15)))
+            while (SDL_GetTicks() < (start_time + ((frame * 1000) / 30)))
                 SDL_Delay(1);
         }
         av_packet_unref(&packet);
@@ -627,11 +631,12 @@ int aviCleanup()
 
 void aviIntroPlay()
 {
+    //dbgMessagef("aviIntroPlay()");
     int intro;
     utilPlayingIntro = TRUE;
 
     for (intro = 0;intro < 4;intro ++) {
-
+        //dbgMessagef("intro: %d, aviPlayIntros: %d", intro, aviPlayIntros);
         switch (intro) {
             case 0:
                 /*binkInit(-1);*/

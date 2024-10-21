@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "FEFlow.h"
+
 #include "CommandDefs.h"
 #include "Debug.h"
 #include "FEColour.h"
@@ -188,6 +190,8 @@ void tbSetupHyperspace(void);
 ----------------------------------------------------------------------------*/
 udword tbBumperProcess(regionhandle region, smemsize ID, udword event, udword data)
 {
+
+    //dbgMessagef("tbBumperProcess");
     if (tbDisable)
     {
         if (tbRegionsAttached)
@@ -215,7 +219,8 @@ udword tbBumperProcess(regionhandle region, smemsize ID, udword event, udword da
             return 0;
 
         if (tbBumpSmooth)
-        {                                                   //if smooth-bump
+        {
+            //dbgMessagef("tbBumpSmooth");
             tbBumpDirection = 1;                            //start moving it up
             if (!tbRegionsAttached)
             {                                               //attach the task bar to bumper
@@ -225,20 +230,24 @@ udword tbBumperProcess(regionhandle region, smemsize ID, udword event, udword da
                 tbCalcTotalShipCommands();
                 tbRefreshBaby = taskCallBackRegister(tbRefreshBabyFunction, 0, NULL, (real32)TB_RefreshInterval);
                 tbTaskBarActive = TRUE;
-                //dbgMessage("Taskbar on ");
 
-                tutGameMessage("Game_TaskbarOn");
+                dbgMessage("Taskbar on ");
+
+                tutGameMessage("Game_TaskbarOn, tbBumpSmooth");
             }
         }
         else
         {                                                   //else bump instantly
             if (!tbRegionsAttached)
             {
+                dbgMessagef("regRegionScroll(tbBumperRegion, 0, - %d",tbBumpFullHeight);
                 regMoveLinkChild(tbBaseRegion, tbBumperRegion);
                 regRegionScroll(tbBumperRegion, 0, -(tbBumpFullHeight));
                 tbRegionsAttached = TRUE;
 
                 tbTaskBarInit();
+
+
 
                 tutGameMessage("Game_TaskbarOn");
             }
@@ -573,7 +582,12 @@ void tbStartup(void)
 
     //now re-reposition to bottom of screen
 
-    regRegionScroll(tbBaseRegion, 0, -((MAIN_WindowHeight - 480) / 2));
+    //dbgMessagef("regRegionScroll(tbBaseRegion, 0, -((%d - 480) / 2));",MAIN_WindowHeight);
+    //dbgMessagef("regRegionScroll(tbBaseRegion, 0, -((%d - 480) / 2));",-((MAIN_WindowHeight - 480) / 2));
+
+    //regRegionScroll(tbBaseRegion, 0, -((MAIN_WindowHeight - 480) / 2));
+    //regRegionScroll(tbBaseRegion, 0, -((MAIN_WindowHeight - 600) / 2));
+    regRegionScroll(tbBaseRegion, 0, -((MAIN_WindowHeight - FE_max_height) / 2));
     //tbBaseRegion->rect.y0 -= ((MAIN_WindowHeight - 480) / 2);
 
     //load a font if needed
@@ -1316,6 +1330,696 @@ void tbCalcTotalShipCommands(void)
             tbCommonTactic = TB_TACTIC_NONE;
           */
     }
+}
+
+int getTargetID(TargetPtr new_target)
+{
+	if (new_target->objtype == OBJ_ShipType)
+	{
+		Ship* tmp_ship = new_target;
+		return tmp_ship->shipID.shipNumber;
+	}
+	else if (new_target->objtype == OBJ_DerelictType)
+	{
+		Derelict* tmp_der = new_target;
+		return tmp_der->derelictID.derelictNumber;
+	}
+	else if (new_target->objtype == OBJ_AsteroidType)
+	{
+		Resource* tmp_res = new_target;
+		return tmp_res->resourceID.resourceNumber;
+	}
+	else if (new_target->objtype == OBJ_DustType)
+	{
+		DustCloud* tmp_res = new_target;
+		return tmp_res->resourceID.resourceNumber;
+	}
+	else if (new_target->objtype == OBJ_MissileType)
+	{
+		Missile* tmp_res = new_target;
+		return tmp_res->missileID.missileNumber;
+	}
+	else if (new_target->objtype == OBJ_GasType)
+	{
+		GasCloud* tmp_res = new_target;
+		return tmp_res->resourceID.resourceNumber;
+	}
+	else if (new_target->objtype == OBJ_NebulaType)
+	{
+		Nebula* tmp_res = new_target;
+		return tmp_res->resourceID.resourceNumber;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int addShiptoTargetArray(TargetPtr target_array[], int last_array_size, int max_array_size, TargetPtr new_target)
+{
+	int found_flag = 0;
+	for (int i = 0; i < last_array_size && i < max_array_size; i++)
+	{
+		if (target_array[i] != NULL)
+		{
+			//if (target_array[i]->shipID.shipNumber == new_target->shipID.shipNumber)
+			if (getTargetID(target_array[i]) == getTargetID(new_target) && target_array[i]->objtype == new_target->objtype)
+			{
+				found_flag = 1;
+				//dbgMessagef("addShiptoTargetArray, dup item, array size: %d", last_array_size);
+				return last_array_size;
+			}
+		}
+	}
+	if (found_flag == FALSE)
+	{
+		target_array[last_array_size] = new_target;
+		//dbgMessagef("addShiptoTargetArray, adding item at: %d", last_array_size);
+		last_array_size++;
+		return last_array_size;
+	}
+}
+
+int addShiptoDockTargetArray(ShipPtr target_array[], int last_array_size, int max_array_size, ShipPtr new_target)
+{
+	int found_flag = 0;
+	for (int i = 0; i < last_array_size && i < max_array_size; i++)
+	{
+		if (target_array[i] != NULL)
+		{
+			//if (target_array[i]->shipID.shipNumber == new_target->shipID.shipNumber)
+			if (getTargetID(target_array[i]->dockvars.dockship) == getTargetID(new_target->dockvars.dockship) && target_array[i]->objtype == new_target->objtype)
+			{
+				found_flag = 1;
+				//dbgMessagef("addShiptoTargetArray, dup item, array size: %d", last_array_size);
+				return last_array_size;
+			}
+		}
+	}
+	if (found_flag == FALSE)
+	{
+		target_array[last_array_size] = new_target;
+		//dbgMessagef("addShiptoTargetArray, adding item at: %d", last_array_size);
+		last_array_size++;
+		return last_array_size;
+	}
+}
+
+void tbDrawShipCommands(color col)
+{
+	sdword i;
+	Ship *ship;
+	CommandToDo *command;
+
+	uword temp_tbShipsEvas = 0;
+	uword temp_tbShipsNeut = 0;
+	uword temp_tbShipsAggr = 0;
+	uword temp_tbShipsMoving = 0;
+	uword temp_tbShipsAttacking = 0;
+	uword temp_tbShipsHarvesting = 0;
+	uword temp_tbShipsGuarding = 0;
+	uword temp_tbShipsDocking = 0;
+	uword temp_tbShipsOther = 0;
+	uword temp_holdingpattern = 0;
+	uword temp_attackmove = 0;
+	uword temp_formation = 0;
+	uword temp_special = 0;
+	uword temp_tbShipsDockingDropoff = 0;
+	uword temp_tbParadeFormation = 0;
+
+	int num_targets = 0;
+	int target_type = 0;
+	int last_attack_array_size = 0;
+	int last_special_array_size = 0;
+	int last_protect_array_size = 0;
+	int last_dock_array_size = 0;
+	int ru_dropoff_array_size = 0;
+	int max_array_size = 25;
+	TargetPtr attack_target[max_array_size];
+	TargetPtr special_target[max_array_size];
+	ShipPtr protect_target[max_array_size];
+	ShipPtr dock_target[max_array_size];
+	ShipPtr ru_dropoff_target[max_array_size];
+
+	//int current_y_cord = MAIN_WindowHeight/3+100;
+	int current_y_cord = MAIN_WindowHeight-(MAIN_WindowHeight*.5);
+	int current_x_cord = MAIN_WindowWidth - ioShipListWidth;
+	char tb_ship_cmd_str[80];
+
+	color tb_bg_color = colRGBA(0  , 100, 160, 100);
+	color tb_border_color = colRGBA(0  , 100, 160, 255);
+	color tb_fg_color = colRGBA(255  , 255, 255, 255);
+	color tb_header_color = colRGBA(255  , 200, 0, 180);
+	color tb_attack_color = colRGBA(255  , 75, 75, 218);
+	color tb_repair_color = colRGBA(0  , 255, 0, 255);
+	color tb_retire_color = colRGBA(255  , 255, 0, 255);
+	rectangle bg_rec;
+
+	for(i=0; i<selSelected.numShips; ++i)
+	{
+		ship = selSelected.ShipPtr[i];
+		command = ship->command;
+		if (command)
+		{
+			switch (command->ordertype.order)
+			{
+				case COMMAND_HALT:
+				case COMMAND_MILITARY_PARADE:
+					temp_tbParadeFormation++;
+					break;
+				case COMMAND_LAUNCH_SHIP:
+				case COMMAND_NULL:
+					if (bitTest(command->ordertype.attributes, COMMAND_MASK_PROTECTING))
+					{
+						temp_tbShipsGuarding++;
+						if (command->protect != NULL)
+						{
+							//dbgMessagef("command->specialtargets->numTargets : %d", command->protect->numShips);
+							num_targets = command->protect->numShips;
+							for (int i = 0; i < num_targets && i < max_array_size; i++)
+							{
+								last_protect_array_size = addShiptoTargetArray(&protect_target, last_protect_array_size, max_array_size, command->protect->ShipPtr[i]);
+							}
+						}
+					}
+					if (bitTest(command->ordertype.attributes, COMMAND_MASK_HOLDING_PATTERN))
+					{
+						temp_holdingpattern++;
+					}
+					break;
+				case COMMAND_DOCK:
+					if (command->dock.wasHarvesting)
+					{
+						temp_tbShipsDockingDropoff++;
+						num_targets = command->selection->numShips;
+						for (int i = 0; i < num_targets && i < max_array_size; i++)
+						{
+							ShipPtr tmp_ship  = command->selection->ShipPtr[i];
+							ru_dropoff_array_size = addShiptoDockTargetArray(&ru_dropoff_target, ru_dropoff_array_size, max_array_size, tmp_ship);
+						}
+					}
+					else
+					{
+						temp_tbShipsDocking++;
+						if (command->selection != NULL)
+						{
+							//dbgMessagef("command->selection->numShips : %d", command->selection->numShips);
+							num_targets = command->selection->numShips;
+							for (int i = 0; i < num_targets && i < max_array_size; i++)
+							{
+								ShipPtr tmp_ship  = command->selection->ShipPtr[i];
+								last_dock_array_size = addShiptoDockTargetArray(&dock_target, last_dock_array_size, max_array_size, tmp_ship);
+							}
+						}
+					}
+					break;
+				case COMMAND_MOVE:
+					temp_tbShipsMoving++;
+					break;
+				case COMMAND_ATTACK:
+					temp_tbShipsAttacking++;
+					if (bitTest(command->ordertype.attributes, COMMAND_MASK_ATTACKING_AND_MOVING))
+					{
+						temp_attackmove++;
+					}
+					num_targets = command->attack->numTargets;
+					for (int i = 0; i < num_targets && i < max_array_size; i++)
+					{
+						target_type = command->attack->TargetPtr[i]->objtype;
+						if (target_type == OBJ_ShipType || target_type == OBJ_DerelictType || target_type == OBJ_AsteroidType  || target_type == OBJ_DustType  || target_type == OBJ_MissileType || target_type == OBJ_GasType || target_type == OBJ_NebulaType)
+						{
+							last_attack_array_size = addShiptoTargetArray(&attack_target, last_attack_array_size, max_array_size, command->attack->TargetPtr[i]);
+						} else
+						{
+							target_type = command->attack->TargetPtr[i]->objtype;
+							dbgMessagef("target_type: %d", target_type);
+						}
+					}
+					break;
+				case COMMAND_COLLECT_RESOURCES:
+					temp_tbShipsHarvesting++;
+					break;
+				case COMMAND_SPECIAL:
+					temp_special++;
+					if (command->specialtargets != NULL)
+					{	num_targets = command->specialtargets->numTargets;
+						for (int i = 0; i < num_targets && i < max_array_size; i++)
+						{
+							last_special_array_size = addShiptoTargetArray(&special_target, last_special_array_size, max_array_size, command->specialtargets->TargetPtr[i]);
+							//dbgMessagef("command->ordertype.order: %d, command->ordertype.attributes: %d", command->ordertype.order, command->ordertype.attributes);
+							//command->
+						}
+					}
+					break;
+				default:
+					temp_tbShipsOther++;
+					break;
+			}
+		}
+		//now tactics
+		switch(ship->tacticstype)
+		{
+		case Evasive:
+			temp_tbShipsEvas++;
+			break;
+		case Neutral:
+			temp_tbShipsNeut++;
+			break;
+		case Aggressive:
+			temp_tbShipsAggr++;
+			break;
+		default:
+			break;
+		}
+	}
+
+	//fontMakeCurrent(ioShipListFont);
+	int inital_y_cord;
+	int final_y_cord;
+	if (temp_tbShipsEvas|temp_tbShipsNeut|temp_tbShipsAggr)
+	{
+		sprintf(tb_ship_cmd_str, "Tactics:");
+		inital_y_cord = current_y_cord-4;
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord-4;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		fontPrint(current_x_cord, current_y_cord, tb_header_color, tb_ship_cmd_str);
+	}
+	if (temp_tbShipsEvas)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Evasive");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	} if (temp_tbShipsNeut)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Neutral");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	} if (temp_tbShipsAggr)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Aggressive");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	}
+	if (temp_tbShipsAttacking|temp_tbShipsMoving|temp_tbShipsHarvesting|temp_tbShipsDocking|temp_tbShipsGuarding|temp_holdingpattern|temp_attackmove|temp_special|temp_tbParadeFormation|temp_tbShipsDockingDropoff)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "Orders:");
+		fontPrint(current_x_cord, current_y_cord, tb_header_color, tb_ship_cmd_str);
+	}
+	if (temp_tbShipsAttacking)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Attacking:");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+		for (int i = 0; i < last_attack_array_size; i++)
+		{
+			current_y_cord += fontHeight(" ");
+			int ship_id = getTargetID(attack_target[i]);
+
+			char* ship_name = NULL;
+			char cap_ship_name[80];
+			real32 ship_health = 0;
+			real32 max_health = 0;
+			if (attack_target[i]->objtype == OBJ_ShipType)
+			{
+				Ship* ship_ptr = attack_target[i];
+				ship_health  = ship_ptr->health;
+				max_health = ship_ptr->staticinfo->maxhealth;
+				ship_name = strGetString(ship_ptr->staticinfo->shiptype + strShipAbrevOffset);
+				strcpy(cap_ship_name, ship_name);
+				capitalize(cap_ship_name);
+				ship_name = cap_ship_name;
+			} else if (attack_target[i]->objtype == OBJ_DerelictType)
+			{
+				Derelict* d_ptr = attack_target[i];
+				ship_health  = d_ptr->health;
+				max_health = d_ptr->staticinfo->maxhealth;
+				ship_name = DerelictTypeToStr(d_ptr->derelicttype);
+			}
+			else if (attack_target[i]->objtype == OBJ_AsteroidType)
+			{
+				Asteroid* d_ptr = attack_target[i];
+				ship_health  = d_ptr->health;
+				max_health = d_ptr->staticinfo->maxhealth;
+				ship_name = AsteroidTypeToStr(d_ptr->asteroidtype);
+			}
+			else if (attack_target[i]->objtype == OBJ_DustType)
+			{
+				DustCloud* d_ptr = attack_target[i];
+				ship_health  = d_ptr->health;
+				max_health = d_ptr->staticinfo->maxhealth;
+				ship_name = DustCloudTypeToStr(d_ptr->dustcloudtype);
+			}
+			else if (attack_target[i]->objtype == OBJ_GasType)
+			{
+				GasCloud* d_ptr = attack_target[i];
+				ship_health  = d_ptr->health;
+				max_health = d_ptr->staticinfo->maxhealth;
+				ship_name = GasCloudTypeToStr(d_ptr->gascloudtype);
+			}
+			else if (attack_target[i]->objtype == OBJ_NebulaType)
+			{
+				Nebula* d_ptr = attack_target[i];
+				ship_health  = d_ptr->health;
+				max_health = d_ptr->staticinfo->maxhealth;
+				ship_name = NebulaTypeToStr(d_ptr->nebulatype);
+			}
+			else if (attack_target[i]->objtype == OBJ_MissileType)
+			{
+				Missile* d_ptr = attack_target[i];
+				ship_health  = d_ptr->health;
+				max_health = d_ptr->staticinfo->maxhealth;
+				ship_name = MissileTypeToStr(d_ptr->missileType);
+			}
+			bg_rec.x0 = current_x_cord-8;
+			bg_rec.y0= current_y_cord;
+			bg_rec.x1 = MAIN_WindowWidth;
+			bg_rec.y1 = current_y_cord+fontHeight(" ");
+			primRectTranslucent2(&bg_rec,tb_bg_color);
+			sprintf(tb_ship_cmd_str, "    %s", ship_name);
+			fontPrint(current_x_cord, current_y_cord, tb_attack_color, tb_ship_cmd_str);
+			sprintf(tb_ship_cmd_str, " # %d", ship_id);
+			fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_attack_color, tb_ship_cmd_str);
+			if (ship_health != 0)
+			{
+				if ((ship_health/max_health) > 1)
+				{
+					max_health = max_health*2;
+				}
+				//sprintf(tb_ship_cmd_str, "    %s,  %2.1f%%", ship_name, (ship_health/max_health)*100);
+				rectangle health_rect;
+				int hp_max_x = MAIN_WindowWidth-5;
+				real32 hp_scale_x = hp_max_x - (current_x_cord+fontWidth("    "));
+				health_rect.x0 = current_x_cord+fontWidth("    ");
+				health_rect.y0= current_y_cord+fontHeight(" ");
+				health_rect.x1 = health_rect.x0 + (hp_scale_x*(ship_health/max_health));
+				health_rect.y1 = health_rect.y0+4;
+				//dbgMessagef("health_rect.x1: %d, %2.1f", health_rect.x1, (ship_health/max_health));
+				bg_rec.x0 = current_x_cord-8;
+				bg_rec.y0= current_y_cord+fontHeight(" ");
+				bg_rec.x1 = MAIN_WindowWidth;
+				bg_rec.y1 = current_y_cord+fontHeight(" ")+4;
+				primRectTranslucent2(&bg_rec,tb_bg_color);
+				primRectSolid2(&health_rect,tb_attack_color);
+				current_y_cord += 4;
+			}
+		}
+	}
+	if (temp_tbShipsMoving)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Moving");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	}
+	if (temp_tbParadeFormation)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Military Parade Formation");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	}
+	if (temp_tbShipsHarvesting)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Harvesting");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	}
+	if (temp_tbShipsDockingDropoff)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Resources Drop Off");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+
+		for (int i = 0; i < ru_dropoff_array_size; i++)
+		{
+			current_y_cord += fontHeight(" ");
+			bg_rec.x0 = current_x_cord-8;
+			bg_rec.y0= current_y_cord;
+			bg_rec.x1 = MAIN_WindowWidth;
+			bg_rec.y1 = current_y_cord+fontHeight(" ");
+			primRectTranslucent2(&bg_rec,tb_bg_color);
+			ShipPtr dock_src_ptr = ru_dropoff_target[i];
+			ShipPtr dock_target_ptr = ru_dropoff_target[i]->dockvars.dockship;
+			int ship_id = dock_target_ptr->shipID.shipNumber;
+			char* ship_name = NULL;
+			char cap_ship_name[80];
+			ship_name = strGetString(dock_target_ptr->staticinfo->shiptype + strShipAbrevOffset);
+			strcpy(cap_ship_name, ship_name);
+			capitalize(cap_ship_name);
+			ship_name = cap_ship_name;
+
+			if (ru_dropoff_target[i]->command != NULL)
+			{
+				//dbgMessagef("ru_dropoff_target[i]->command->dock.dockType: %d",ru_dropoff_target[i]->command->dock.dockType);
+				if (dock_src_ptr->command->dock.dockType != DOCK_FOR_RETIRE)
+				{
+					sprintf(tb_ship_cmd_str, "    D: %s", ship_name, ship_id);
+					fontPrint(current_x_cord, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+					sprintf(tb_ship_cmd_str, " # %d", ship_id);
+					fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+				}
+			}
+		}
+
+	}
+	if (temp_tbShipsDocking)
+	{
+
+			current_y_cord += fontHeight(" ");
+			bg_rec.x0 = current_x_cord-8;
+			bg_rec.y0= current_y_cord;
+			bg_rec.x1 = MAIN_WindowWidth;
+			bg_rec.y1 = current_y_cord+fontHeight(" ");
+			primRectTranslucent2(&bg_rec,tb_bg_color);
+			sprintf(tb_ship_cmd_str, "    Docking");
+			fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+
+			for (int i = 0; i < last_dock_array_size; i++)
+			{
+				current_y_cord += fontHeight(" ");
+				bg_rec.x0 = current_x_cord-8;
+				bg_rec.y0= current_y_cord;
+				bg_rec.x1 = MAIN_WindowWidth;
+				bg_rec.y1 = current_y_cord+fontHeight(" ");
+				primRectTranslucent2(&bg_rec,tb_bg_color);
+				ShipPtr dock_src_ptr = dock_target[i];
+				ShipPtr dock_target_ptr = dock_target[i]->dockvars.dockship;
+				int ship_id = dock_target_ptr->shipID.shipNumber;
+				char* ship_name = strGetString(dock_target_ptr->staticinfo->shiptype + strShipAbrevOffset);
+				char cap_ship_name[80];
+				strcpy(cap_ship_name, ship_name);
+				capitalize(cap_ship_name);
+				ship_name = cap_ship_name;
+
+				if (dock_target[i]->command != NULL)
+				{
+					//dbgMessagef("dock_target[i]->command->dock.dockType: %d",dock_target[i]->command->dock.dockType);
+
+					if (dock_src_ptr->command->dock.dockType != DOCK_FOR_RETIRE)
+					{
+						sprintf(tb_ship_cmd_str, "    D: %s", ship_name, ship_id);
+						fontPrint(current_x_cord, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+						sprintf(tb_ship_cmd_str, " # %d", ship_id);
+						fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+					} else
+					{
+						sprintf(tb_ship_cmd_str, "    R: %s", ship_name, ship_id);
+						fontPrint(current_x_cord, current_y_cord, tb_retire_color, tb_ship_cmd_str);
+						sprintf(tb_ship_cmd_str, " # %d", ship_id);
+						fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_retire_color, tb_ship_cmd_str);
+					}
+				}
+			}
+	}
+	if (temp_tbShipsGuarding)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Guarding");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+		for (int i = 0; i < last_protect_array_size; i++)
+		{
+			current_y_cord += fontHeight(" ");
+			bg_rec.x0 = current_x_cord-8;
+			bg_rec.y0= current_y_cord;
+			bg_rec.x1 = MAIN_WindowWidth;
+			bg_rec.y1 = current_y_cord+fontHeight(" ");
+			primRectTranslucent2(&bg_rec,tb_bg_color);
+			ShipPtr s_target_ptr = protect_target[i];
+			int ship_id = s_target_ptr->shipID.shipNumber;
+			char* ship_name = strGetString(s_target_ptr->staticinfo->shiptype + strShipAbrevOffset);
+			char cap_ship_name[strlen(ship_name)+1];
+			strcpy(cap_ship_name, ship_name);
+			capitalize(cap_ship_name);
+			ship_name = cap_ship_name;
+
+			if (s_target_ptr->playerowner->playerIndex == 0)
+			{
+				sprintf(tb_ship_cmd_str, "    G: %s", ship_name, ship_id);
+				fontPrint(current_x_cord, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+				sprintf(tb_ship_cmd_str, " # %d", ship_id);
+				fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+			}
+		}
+	}
+	if (temp_holdingpattern)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Holding Pattern");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	}
+	if (temp_attackmove)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Attack Move");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+	}
+	if (temp_special)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0= current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+fontHeight(" ");
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+		sprintf(tb_ship_cmd_str, "    Special Ability");
+		fontPrint(current_x_cord, current_y_cord, col, tb_ship_cmd_str);
+		Ship* s_target_ptr;
+		real32 ship_health = 0;
+		real32 max_health = 0;
+		for (int i = 0; i < last_special_array_size; i++)
+		{
+			current_y_cord += fontHeight(" ");
+			bg_rec.x0 = current_x_cord-8;
+			bg_rec.y0= current_y_cord;
+			bg_rec.x1 = MAIN_WindowWidth;
+			bg_rec.y1 = current_y_cord+fontHeight(" ");
+			primRectTranslucent2(&bg_rec,tb_bg_color);
+			s_target_ptr = special_target[i];
+			ship_health  = s_target_ptr->health;
+			max_health = s_target_ptr->staticinfo->maxhealth;
+			int ship_id = s_target_ptr->shipID.shipNumber;
+			char* ship_name = strGetString(s_target_ptr->staticinfo->shiptype + strShipAbrevOffset);
+			char cap_ship_name[80];
+			strcpy(cap_ship_name, ship_name);
+			capitalize(cap_ship_name);
+			ship_name = cap_ship_name;
+
+			if (s_target_ptr->playerowner->playerIndex != 0)
+			{
+				sprintf(tb_ship_cmd_str, "    S: %s", ship_name, ship_id);
+				fontPrint(current_x_cord, current_y_cord, tb_attack_color, tb_ship_cmd_str);
+				sprintf(tb_ship_cmd_str, " # %d", ship_id);
+				fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_attack_color, tb_ship_cmd_str);
+			} else
+			{
+				sprintf(tb_ship_cmd_str, "    R: %s", ship_name, ship_id);
+				fontPrint(current_x_cord, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+				sprintf(tb_ship_cmd_str, " # %d", ship_id);
+				fontPrint(MAIN_WindowWidth-fontWidth(tb_ship_cmd_str)-4, current_y_cord, tb_repair_color, tb_ship_cmd_str);
+				if (ship_health != 0)
+				{
+					if ((ship_health/max_health) > 1)
+					{
+						max_health = max_health*2;
+					}
+					//sprintf(tb_ship_cmd_str, "    %s,  %2.1f%%", ship_name, (ship_health/max_health)*100);
+					rectangle health_rect;
+					int hp_max_x = MAIN_WindowWidth-5;
+					real32 hp_scale_x = hp_max_x - (current_x_cord+fontWidth("    "));
+					health_rect.x0 = current_x_cord+fontWidth("    ");
+					health_rect.y0= current_y_cord+fontHeight(" ");
+					health_rect.x1 = health_rect.x0 + (hp_scale_x*(ship_health/max_health));
+					health_rect.y1 = health_rect.y0+4;
+					//dbgMessagef("health_rect.x1: %d, %2.1f", health_rect.x1, (ship_health/max_health));
+					bg_rec.x0 = current_x_cord-8;
+					bg_rec.y0= current_y_cord+fontHeight(" ");
+					bg_rec.x1 = MAIN_WindowWidth;
+					bg_rec.y1 = current_y_cord+fontHeight(" ")+4;
+					primRectTranslucent2(&bg_rec,tb_bg_color);
+					primRectSolid2(&health_rect,tb_repair_color);
+					current_y_cord += 4;
+				}
+			}
+		}
+	}
+	if (temp_tbShipsEvas|temp_tbShipsNeut|temp_tbShipsAggr)
+	{
+		current_y_cord += fontHeight(" ");
+		bg_rec.x0 = current_x_cord-8;
+		bg_rec.y0 = current_y_cord;
+		bg_rec.x1 = MAIN_WindowWidth;
+		bg_rec.y1 = current_y_cord+4;
+		final_y_cord = current_y_cord+4;
+		primRectTranslucent2(&bg_rec,tb_bg_color);
+
+		bg_rec.x0 = current_x_cord-9;
+		bg_rec.y0 = inital_y_cord-1;
+		bg_rec.x1 = MAIN_WindowWidth-2;
+		bg_rec.y1 = final_y_cord+1;
+		primRectOutline2(&bg_rec,2,tb_border_color);
+	}
 }
 
 void tbRUs(featom *atom, regionhandle region)

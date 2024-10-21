@@ -1857,7 +1857,7 @@ ubyte aitSetTeamDifficultyLevel(AITeam *team, udword playerDL, udword  teamDL)
 ----------------------------------------------------------------------------*/
 AITeam *aitFindMostValuable(udword valueness)
 {
-    AITeam *valueArray[10];
+    AITeam *valueArray[20];
     udword i, j, k;
 
     dbgAssertOrIgnore(valueness <= 10);

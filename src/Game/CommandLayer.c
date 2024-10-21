@@ -35,6 +35,8 @@
 #include "Tweak.h"
 #include "Universe.h"
 #include "UnivUpdate.h"
+#include "StringsOnly.h"
+#include "Options.h"
 
 
 #define DEBUG_PASSIVE_ATTACK  0
@@ -66,6 +68,15 @@ bool32 isSelectionExclusivlyStrikeCraft(SelectCommand *selection);
 bool32 isSelectionExclusivlyStrikeCraftorNoMoveAndAttackShips(SelectCommand *selection);
 bool32 selectionHasSwarmers(SelectCommand *selection);
 void removeShipFromMpHyperspaceing(Ship *ship);
+
+/*=============================================================================
+    DATA:
+=============================================================================*/
+
+time_t auto_delta_ts;
+bool8 auto_delta_msg_flag;
+LinkedList auto_delta_msg_list;
+
 
 /*=============================================================================
     Tweakables:
@@ -7990,20 +8001,96 @@ bool32 TargetWithinAttackRange(Ship *ship,SpaceObjRotImpTarg *target)
     }
 }
 
-void putFightersInSelection(MaxSelection *dst,MaxSelection *src)
+void putFightersInSelectionOfType(MaxSelection *dst,MaxSelection *src, ShipType select_type)
 {
     sdword i,k;
     k=0;
+    Ship* my_ship_ptr;
+    ShipType my_ship_type;
+
+
     for(i=0;i<src->numShips;i++)
     {
         if(src->ShipPtr[i]->staticinfo->shipclass == CLASS_Fighter)
         {
+            my_ship_ptr = src->ShipPtr[i];
+            my_ship_type = my_ship_ptr->staticinfo->shiptype;
+            if (my_ship_type == select_type)
+            {   dst->ShipPtr[k] = my_ship_ptr;
+                k++;
+            }
+        }
+    }
+    dst->numShips = k;
+}
+
+void putFightersInSelection(MaxSelection *dst,MaxSelection *src)
+{
+    sdword i,k;
+    k=0;
+    Ship* my_ship_ptr;
+    ShipType my_ship_type;
+
+
+    for(i=0;i<src->numShips;i++)
+    {
+        if(src->ShipPtr[i]->staticinfo->shipclass == CLASS_Fighter)
+        {
+            my_ship_ptr = src->ShipPtr[i];
+            my_ship_type = my_ship_ptr->staticinfo->shiptype;
+
+            switch (my_ship_type)
+            {
+                case AttackBomber:
+                    dbgMessagef("my_ship_type: %d, AttackBomber", my_ship_type);
+                    break;
+                case HeavyInterceptor:
+                    dbgMessagef("my_ship_type: %d, HeavyInterceptor", my_ship_type);
+                    break;
+                case DefenseFighter:
+                    dbgMessagef("my_ship_type: %d, DefenseFighter", my_ship_type);
+                    break;
+                case HeavyDefender:
+                    dbgMessagef("my_ship_type: %d, HeavyDefender", my_ship_type);
+                    break;
+                case LightInterceptor:
+                    dbgMessagef("my_ship_type: %d, LightInterceptor", my_ship_type);
+                    break;
+                case CloakedFighter:
+                    dbgMessagef("my_ship_type: %d, CloakedFighter", my_ship_type);
+                    break;
+            }
+
             dst->ShipPtr[k] = src->ShipPtr[i];
             k++;
         }
     }
     dst->numShips = k;
 }
+
+void putCorvettesInSelectionOfType(MaxSelection *dst,MaxSelection *src, ShipType select_type)
+{
+    sdword i,k;
+    k=0;
+    Ship* my_ship_ptr;
+    ShipType my_ship_type;
+
+
+    for(i=0;i<src->numShips;i++)
+    {
+        if(src->ShipPtr[i]->staticinfo->shipclass == CLASS_Corvette)
+        {
+            my_ship_ptr = src->ShipPtr[i];
+            my_ship_type = my_ship_ptr->staticinfo->shiptype;
+            if (my_ship_type == select_type)
+            {   dst->ShipPtr[k] = my_ship_ptr;
+                k++;
+            }
+        }
+    }
+    dst->numShips = k;
+}
+
 void putCorvettesInSelection(MaxSelection *dst,MaxSelection *src)
 {
     sdword i,k;
@@ -8018,6 +8105,53 @@ void putCorvettesInSelection(MaxSelection *dst,MaxSelection *src)
     }
     dst->numShips = k;
 }
+
+void putFrigatesInSelectionOfType(MaxSelection *dst,MaxSelection *src, ShipType select_type)
+{
+    sdword i,k;
+    k=0;
+    Ship* my_ship_ptr;
+    ShipType my_ship_type;
+
+
+    for(i=0;i<src->numShips;i++)
+    {
+        if(src->ShipPtr[i]->staticinfo->shipclass == CLASS_Frigate)
+        {
+            my_ship_ptr = src->ShipPtr[i];
+            my_ship_type = my_ship_ptr->staticinfo->shiptype;
+            if (my_ship_type == select_type)
+            {   dst->ShipPtr[k] = my_ship_ptr;
+                k++;
+            }
+        }
+    }
+    dst->numShips = k;
+}
+
+void putCapitalsInSelectionOfType(MaxSelection *dst,MaxSelection *src, ShipType select_type)
+{
+    sdword i,k;
+    k=0;
+    Ship* my_ship_ptr;
+    ShipType my_ship_type;
+
+
+    for(i=0;i<src->numShips;i++)
+    {
+        if(src->ShipPtr[i]->staticinfo->shipclass == CLASS_Destroyer || src->ShipPtr[i]->staticinfo->shipclass == CLASS_HeavyCruiser)
+        {
+            my_ship_ptr = src->ShipPtr[i];
+            my_ship_type = my_ship_ptr->staticinfo->shiptype;
+            if (my_ship_type == select_type)
+            {   dst->ShipPtr[k] = my_ship_ptr;
+                k++;
+            }
+        }
+    }
+    dst->numShips = k;
+}
+
 void putCapitalsInSelection(MaxSelection *dst,MaxSelection *src)
 {
     sdword i,k;
@@ -8034,7 +8168,339 @@ void putCapitalsInSelection(MaxSelection *dst,MaxSelection *src)
     dst->numShips = k;
 }
 
+/*-----------------------------------------------------------------------------
+    Name        : AutoDeltaFormation
+    Description : Puts selected fighters in deltaformation
+    Inputs      :
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+#define AUTODELTA_F_GROUP_SIZE    5
+#define AUTODELTA_C_GROUP_SIZE    5
+#define AUTODELTA_Frig_GROUP_SIZE    9
+#define AUTODELTA_Capitals_GROUP_SIZE    4
+void AutoDeltaFormation(MaxSelection current_selection)
+{
+    MaxSelection fighters, corvettes, firgates, capitals;
+    MaxSelection working;
+    sdword k;
 
+
+	auto_delta_msg_flag = TRUE;
+	auto_delta_ts = time(NULL);
+	listInit(&auto_delta_msg_list);
+
+    //filter fighters by type
+    putFightersInSelectionOfType(&fighters,&current_selection, AttackBomber);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+    putFightersInSelectionOfType(&fighters,&current_selection, HeavyInterceptor);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+    putFightersInSelectionOfType(&fighters,&current_selection, DefenseFighter);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+    putFightersInSelectionOfType(&fighters,&current_selection, HeavyDefender);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+    putFightersInSelectionOfType(&fighters,&current_selection, LightInterceptor);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+    putFightersInSelectionOfType(&fighters,&current_selection, CloakedFighter);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+    putFightersInSelectionOfType(&fighters,&current_selection, P1Fighter);
+    AutoDeltaFormationPutFightersinDelta(fighters);
+
+    //filtercorvettes by type
+    putCorvettesInSelectionOfType(&corvettes,&current_selection, HeavyCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, LightCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, MinelayerCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, MultiGunCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, RepairCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, SalCapCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, P1MissileCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+	putCorvettesInSelectionOfType(&corvettes,&current_selection, P1StandardCorvette);
+	AutoDeltaFormationPutCorvettesin3DDelta(corvettes);
+
+	putFrigatesInSelectionOfType(&firgates,&current_selection, StandardFrigate);
+    AutoDeltaFormationPutFrigatesinWall(firgates);
+	putFrigatesInSelectionOfType(&firgates,&current_selection, IonCannonFrigate);
+    AutoDeltaFormationPutFrigatesinWall(firgates);
+	putFrigatesInSelectionOfType(&firgates,&current_selection, AdvanceSupportFrigate);
+    AutoDeltaFormationPutFrigatesinWall(firgates);
+	putFrigatesInSelectionOfType(&firgates,&current_selection, DDDFrigate);
+    AutoDeltaFormationPutFrigatesinWall(firgates);
+	putFrigatesInSelectionOfType(&firgates,&current_selection, DFGFrigate);
+    AutoDeltaFormationPutFrigatesinWall(firgates);
+
+	putCapitalsInSelectionOfType(&capitals,&current_selection, StandardDestroyer);
+    AutoDeltaFormationPutCapitalsinWall(capitals);
+	putCapitalsInSelectionOfType(&capitals,&current_selection, MissileDestroyer);
+    AutoDeltaFormationPutCapitalsinWall(capitals);
+	putCapitalsInSelectionOfType(&capitals,&current_selection, HeavyCruiser);
+    AutoDeltaFormationPutCapitalsinWall(capitals);
+
+	 //fontPrintCentre(200,colWhite,"bMessage[i].message");
+}
+
+void AutoDeltaFormationProcessMsgList()
+{
+	Node* current_node;
+	char* msg_str;
+	int current_y = 8;
+
+	current_node = auto_delta_msg_list.head;
+
+	while(current_node != NULL)
+	{
+		msg_str = current_node->structptr;
+		//dbgMessagef("list: %s", msg_str);
+		fontMakeCurrent(selGroupFont0);
+		fontPrint(8, current_y, colWhite, msg_str);
+		current_y += fontHeightf(" ");
+		current_node = current_node->next;
+	}
+}
+
+void AutoDeltaFormationDeleteMsgList()
+{
+	Node* current_node;
+	Node* last_node;
+	char* msg_str;
+
+	current_node = auto_delta_msg_list.head;
+
+	while(current_node != NULL)
+	{
+		last_node = current_node;
+		current_node = current_node->next;
+		free(last_node->structptr);
+		free(last_node);
+	}
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : AutoDeltaFormation
+    Description : Puts selected fighters in delta formation based on Shiptype
+    Inputs      :
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+void AutoDeltaFormationPutFightersinDelta(MaxSelection fighters)
+{
+    MaxSelection working;
+    sdword k;
+	char* msg_str = NULL;
+	Node* list_node = NULL;
+
+    k = 0;
+
+	char* ship_name = NULL;
+	char cap_ship_name[80];
+	if (fighters.numShips != 0)
+	{	ship_name = strGetString(fighters.ShipPtr[0]->shiptype);
+		strcpy(cap_ship_name, ship_name);
+		capitalize(cap_ship_name);
+		ship_name = cap_ship_name;
+	}
+
+    for(int i=0; i < fighters.numShips;i++)
+    {
+            working.ShipPtr[k] = fighters.ShipPtr[i];
+            k++;
+            if(k == op_fighter_formation_size)
+            {
+                working.numShips = k;
+				msg_str = calloc(sizeof(char), 80);
+				list_node = calloc(sizeof(Node), 1);
+				sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_fighter_formation_type), k, ship_name);
+				listAddNode(&auto_delta_msg_list, list_node, msg_str);
+				dbgMessagef(msg_str);
+                clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_fighter_formation_type);
+                k = 0;
+            }
+    }
+    if (k != 0)
+    {
+        working.numShips = k;
+        msg_str = calloc(sizeof(char), 80);
+		list_node = calloc(sizeof(Node), 1);
+		sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_fighter_formation_type), k, ship_name);
+		listAddNode(&auto_delta_msg_list, list_node, msg_str);
+		dbgMessagef(msg_str);
+        clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_fighter_formation_type);
+        speechEvent(working.ShipPtr[0], COMM_SetFormation, op_fighter_formation_type);
+        k = 0;
+    }
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : AutoDeltaFormation
+    Description : Puts selected Corvettes in 3ddelta formation based on Shiptype
+    Inputs      :
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+void AutoDeltaFormationPutCorvettesin3DDelta(MaxSelection corvettes)
+{
+	char* msg_str = NULL;
+	Node* list_node = NULL;
+	MaxSelection working;
+	sdword k;
+
+	k = 0;
+
+	char* ship_name = NULL;
+	char cap_ship_name[80];
+	if (corvettes.numShips != 0)
+	{	ship_name = strGetString(corvettes.ShipPtr[0]->shiptype);
+		strcpy(cap_ship_name, ship_name);
+		capitalize(cap_ship_name);
+		ship_name = cap_ship_name;
+		dbgMessagef("AutoDeltaFormationPutCorvettesin3DDelta, corvettes.numShips: %d", corvettes.numShips);
+	}
+
+
+	for(int i=0; i < corvettes.numShips;i++)
+	{
+			working.ShipPtr[k] = corvettes.ShipPtr[i];
+			k++;
+			if(k == op_corv_formation_size)
+			{
+				working.numShips = k;
+				msg_str = calloc(sizeof(char), 80);
+				list_node = calloc(sizeof(Node), 1);
+				sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_corv_formation_type), k, ship_name);
+				listAddNode(&auto_delta_msg_list, list_node, msg_str);
+				dbgMessagef(msg_str);
+				//dbgMessagef("Auto formation, setting 3D delta formation for %d ships", k);
+				clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_corv_formation_type);
+				k = 0;
+			}
+	}
+	if (k != 0)
+	{
+		working.numShips = k;
+		//dbgMessagef("Auto formation, setting 3D delta formation for %d ships", k);
+		msg_str = calloc(sizeof(char), 80);
+		list_node = calloc(sizeof(Node), 1);
+		sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_corv_formation_type), k, ship_name);
+		listAddNode(&auto_delta_msg_list, list_node, msg_str);
+		dbgMessagef(msg_str);
+		clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_corv_formation_type);
+		speechEvent(working.ShipPtr[0], COMM_SetFormation, op_corv_formation_type);
+		k = 0;
+	}
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : AutoDeltaFormation
+    Description : Puts selected Corvettes in 3ddelta formation based on Shiptype
+    Inputs      :
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+void AutoDeltaFormationPutFrigatesinWall(MaxSelection firgates)
+{
+    MaxSelection working;
+    sdword k;
+	char* msg_str = NULL;
+	Node* list_node = NULL;
+
+    k = 0;
+
+	char* ship_name = NULL;
+	char cap_ship_name[80];
+	if (firgates.numShips != 0)
+	{	ship_name = strGetString(firgates.ShipPtr[0]->shiptype);
+		strcpy(cap_ship_name, ship_name);
+		capitalize(cap_ship_name);
+		ship_name = cap_ship_name;
+	}
+
+    for(int i=0; i < firgates.numShips;i++)
+    {
+            working.ShipPtr[k] = firgates.ShipPtr[i];
+            k++;
+            if(k == op_frigate_formation_size)
+            {
+                working.numShips = k;
+                //dbgMessagef("Auto Formation, setting wall formation for %d ships", k);
+				msg_str = calloc(sizeof(char), 80);
+				list_node = calloc(sizeof(Node), 1);
+				sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_frigate_formation_type), k, ship_name);
+				listAddNode(&auto_delta_msg_list, list_node, msg_str);
+				dbgMessagef(msg_str);
+                clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_frigate_formation_type);
+                k = 0;
+            }
+    }
+    if (k != 0)
+    {
+        working.numShips = k;
+        //dbgMessagef("Auto formation, setting wall formation for %d ships", k);
+		msg_str = calloc(sizeof(char), 80);
+		list_node = calloc(sizeof(Node), 1);
+		sprintf(msg_str, "Setting wall formation for %d %s(s)", k, ship_name);
+		listAddNode(&auto_delta_msg_list, list_node, msg_str);
+		dbgMessagef(msg_str);
+        clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_frigate_formation_type);
+        speechEvent(working.ShipPtr[0], COMM_SetFormation, op_frigate_formation_type);
+        k = 0;
+    }
+}
+
+void AutoDeltaFormationPutCapitalsinWall(MaxSelection capitals)
+{
+    MaxSelection working;
+    sdword k;
+	char* msg_str = NULL;
+	Node* list_node = NULL;
+
+	char* ship_name = NULL;
+	char cap_ship_name[80];
+	if (capitals.numShips != 0)
+	{	ship_name = strGetString(capitals.ShipPtr[0]->shiptype);
+		strcpy(cap_ship_name, ship_name);
+		capitalize(cap_ship_name);
+		ship_name = cap_ship_name;
+	}
+
+    k = 0;
+    for(int i=0; i < capitals.numShips;i++)
+    {
+            working.ShipPtr[k] = capitals.ShipPtr[i];
+            k++;
+            if(k == op_capital_formation_size)
+            {
+                working.numShips = k;
+                //dbgMessagef("Auto formation, setting wall formation for %d ships", k);
+				msg_str = calloc(sizeof(char), 80);
+				list_node = calloc(sizeof(Node), 1);
+				sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_capital_formation_type), k, ship_name);
+				listAddNode(&auto_delta_msg_list, list_node, msg_str);
+				dbgMessagef(msg_str);
+                clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_capital_formation_type);
+                k = 0;
+            }
+    }
+    if (k != 0)
+    {
+        working.numShips = k;
+        //dbgMessagef("Auto Formation, setting wall formation for %d ships", k);
+		msg_str = calloc(sizeof(char), 80);
+		list_node = calloc(sizeof(Node), 1);
+		sprintf(msg_str, "Setting %s for %d %s(s)",TypeOfFormationToNiceStr(op_capital_formation_type), k, ship_name);
+		listAddNode(&auto_delta_msg_list, list_node, msg_str);
+		dbgMessagef(msg_str);
+        clFormation(&universe.mainCommandLayer,(SelectCommand *)&working,op_capital_formation_type);
+        speechEvent(working.ShipPtr[0], COMM_SetFormation, op_capital_formation_type);
+        k = 0;
+    }
+}
 
 /*-----------------------------------------------------------------------------
     Name        : clHoldingPattern
@@ -8044,7 +8510,7 @@ void putCapitalsInSelection(MaxSelection *dst,MaxSelection *src)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-#define MAX_UNORDERED_GROUP_SIZE    11  //maximum ships in a group after
+#define MAX_UNORDERED_GROUP_SIZE    5  //maximum ships in a group after
                                         //attacking {ships ungrouped previously)
 
 void clHoldingPattern(CommandLayer *comlayer,CommandToDo *command)
@@ -8057,6 +8523,8 @@ void clHoldingPattern(CommandLayer *comlayer,CommandToDo *command)
     MaxSelection working;
     MaxSelection *curselection;
     sdword i,j,k;
+
+    dbgMessagef("clHoldingPattern, started");
 
     if (command->ordertype.attributes & COMMAND_MASK_FORMATION)
     {
@@ -8114,6 +8582,7 @@ void clHoldingPattern(CommandLayer *comlayer,CommandToDo *command)
                 //maximum # reached for this group
                 //set their formation,targets,and protection flags accordingly
                 working.numShips = k;
+                dbgMessagef("clHoldingPattern, setting delta formation for %d ships", MAX_UNORDERED_GROUP_SIZE);
                 clFormation(comlayer,(SelectCommand *)&working,DELTA_FORMATION);
 
                 //if group was previously passiveattacking or

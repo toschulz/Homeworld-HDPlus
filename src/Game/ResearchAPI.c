@@ -1268,3 +1268,82 @@ void rmSetTechDependCB(char *directory, char *field, void *dataToFillIn)
     ((udword *)dataToFillIn)[techset] = mask;
 }
 
+void rmTraverseResearchList(color col)
+{
+	Player *player = universe.curPlayerPtr;
+	PlayerResearchInfo research_info = player->researchinfo;
+	LinkedList research_q = research_info.listoftopics;
+	TechStatics* rearch_stats = research_info.techstat;
+
+	int current_y_cord = MAIN_WindowHeight/3-150;
+	int inital_y_cord = 0;
+	int final_y_cord = 0;
+	rectangle my_rec;
+	color cm_bg_color = colRGBA(0  , 100, 160, 100);
+	color cm_fg_color = colRGBA(255  , 200, 0, 180);
+	color cm_border_color = colRGBA(0  , 100, 160, 255);
+	char research_str[80];
+
+	if (research_q.num != 0)
+	{
+		Node* current_node = research_q.head;
+		if (inital_y_cord == 0)
+		{
+			inital_y_cord = current_y_cord;
+		}
+		my_rec.x0 = 0;
+		my_rec.y0= current_y_cord;
+		my_rec.x1 = 250;
+		my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+		//final_y_cord = my_rec.y1;
+		primRectTranslucent2(&my_rec,cm_bg_color);
+		sprintf(research_str, "Researching: ");
+		capitalize(research_str);
+		fontPrint(8, current_y_cord, cm_fg_color, research_str);
+		current_y_cord = current_y_cord+fontHeight(" ")+4;
+
+		while (current_node != NULL)
+		{
+			ResearchTopic* node_topic = current_node->structptr;
+			real32 topic_time_to_complete = rearch_stats->TimeToComplete[node_topic->techresearch];
+			real32 topic_progress = topic_time_to_complete - node_topic->timeleft;
+			int percent_done = (int)((topic_progress/topic_time_to_complete)*100);
+			//dbgMessagef("rmTraverseResearchList: %d, topic: %s, total time: %d, time left: %f, percent done: %d",research_q.num, TechTypeToNiceString(node_topic->techresearch), rearch_stats->TimeToComplete[node_topic->techresearch], node_topic->timeleft, percent_done);
+
+			//current_y_cord += fontHeight(" ");
+			my_rec.x0 = 0;
+			my_rec.y0= current_y_cord;
+			my_rec.x1 = 250;
+			my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+			//final_y_cord = my_rec.y1;
+			primRectTranslucent2(&my_rec,cm_bg_color);
+			sprintf(research_str, "%s", TechTypeToNiceString(node_topic->techresearch));
+			capitalize(research_str);
+			fontPrint(8, current_y_cord, colWhite, research_str);
+			float bar_x1 = ((float)percent_done/(float)100)*248;
+			//dbgMessagef("bar_x1: %f, bar_x1(int): %d", bar_x1, (int)bar_x1);
+			my_rec.x0 = 2;
+			my_rec.y0= current_y_cord+fontHeight(" ");
+			my_rec.x1 = (int)bar_x1;
+			my_rec.y1 = current_y_cord+fontHeight(" ")+4;
+			primRectTranslucent2(&my_rec,cm_fg_color);
+			current_y_cord = current_y_cord+fontHeight(" ")+4;
+			final_y_cord = current_y_cord;
+
+			current_node = current_node->next;
+		}
+		my_rec.x0 = 0;
+		my_rec.y0= current_y_cord;
+		my_rec.x1 = 250;
+		my_rec.y1 = current_y_cord+4;
+		primRectTranslucent2(&my_rec,cm_bg_color);
+		current_y_cord = current_y_cord+4;
+		final_y_cord = current_y_cord;
+
+		my_rec.x0 = 2;
+		my_rec.y0= inital_y_cord-1;
+		my_rec.x1 = 250+1;
+		my_rec.y1 = final_y_cord+1;
+		primRectOutline2(&my_rec,2,cm_border_color);
+	}
+}

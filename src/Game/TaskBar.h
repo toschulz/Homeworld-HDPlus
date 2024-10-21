@@ -47,7 +47,7 @@
 //#define TB_MissionButtons       "TB_TaskButtons"//user region to fit the mission sphere buttons into
 #define TB_ObjectivesListWindow "TB_ObjectivesWindowInit"
 #define TB_FontFile             "Arial_b12.hff"
-#define TB_ObjectiveFontFile    "HW_Eurosecond_11.hff"
+#define TB_ObjectiveFontFile    "to_1.hff"
 
 //parameters for task buttons
 #define TB_MaxButtonWidth       96
@@ -143,5 +143,7 @@ void tbSensorsHook(void);
 
 //bump up the taskbar
 void tbForceTaskbar(bool32 On);
+
+void tbDrawShipCommands(color col);
 
 #endif

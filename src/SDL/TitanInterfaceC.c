@@ -28,13 +28,16 @@ wchar_t GameWereInterestedIn[MAX_TITAN_GAME_NAME_LEN];
 void *GameWereInterestedInMutex = 0;
 
 
+
 /*----------------------------------------------------------------------------
  * Functions
  *--------------------------------------------------------------------------*/
 
+
 void titanGotNumUsersInRoomCB(const wchar_t *theRoomName, int theNumUsers)
 {
 	dbgMessagef("\ntitanGotNumUsersInRoomCB");
+
 }
 
 

@@ -737,10 +737,12 @@ void ellipsoid_seq(ellipseObject* ellipsoid, sdword n, real32 a, real32 b, real3
     kv = 0;
     kw = 1;
 
+
     for (i = 0; i < n; i++)
     {
         kv0 = kv;
         kw0 = kw;
+
 
         for (ko = 1; ko <= 3; ko++)                /* the 1st, 2nd, 3rd octants */
         {

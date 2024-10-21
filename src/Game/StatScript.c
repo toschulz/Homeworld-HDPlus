@@ -26,6 +26,7 @@
 #include "Tactics.h"
 #include "texreg.h"
 #include "Tweak.h"
+#include "Options.h"
 
 #ifdef _MSC_VER
     #define strcasecmp  _stricmp
@@ -229,6 +230,15 @@ void scriptSetRGBACB(char *directory,char *field,void *dataToFillIn)
     udword red, green, blue, alpha;
     sscanf(field,"%d,%d,%d,%d",&red, &green, &blue, &alpha);
     *((color *)dataToFillIn) = colRGBA(red, green, blue, alpha);
+}
+
+void scriptSetReal32CBNLIPS(char *directory,char *field,void *dataToFillIn)
+{
+    //if (disableNLIPS == FALSE)
+	//{
+		dbgMessagef("scriptSetReal32CBNLIPS: %s", field);
+		sscanf(field,"%f",(real32 *)dataToFillIn);
+	//}
 }
 
 void scriptSetReal32CB(char *directory,char *field,void *dataToFillIn)

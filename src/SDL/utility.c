@@ -152,7 +152,7 @@ extern bool32 debugScreenshots;
 extern SDL_Window *sdlwindow;
 extern int MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth;
 
-extern udword aviPlayIntros;
+//extern udword aviPlayIntros;
 
 /*-----------------------------------------------------------------------------
     Name        : utyBrowserExec
@@ -383,6 +383,39 @@ void opNumberEffects(char* name, featom* atom);
 void opCPUDifficulty(char* name, featom* atom);
 void opCPUAttacks(char* name, featom* atom);
 void opInfoOverlay(char* name, featom* atom);
+void opPauseOrdersCB(char* name, featom* atom);
+void opIntoVideosCB(char* name, featom* atom);
+void opRUEndMission(char* name, featom* atom);
+void opShipRecoilCP(char* name, featom* atom);
+void opShipsAlwaysUseOwnerColorsCB(char* name, featom* atom);
+void opExtendedInfoOverlayCB(char* name, featom* atom);
+void opDisableNlipsCB(char* name, featom* atom);
+void opOpenGLMSAACB(char* name, featom* atom);
+void opturboTimeCompFactorCB(char* name, featom* atom);
+void opDrawTimeCompressionFactor(featom *atom, regionhandle region);
+//Fighter
+void opFighterFormationSizeCP(char* name, featom* atom);
+void opFighterFormationSizeDrawCP(featom *atom, regionhandle region);
+void opFighterFormationSizeCP(char* name, featom* atom);
+void opFighterFormationTypeDrawCP(featom *atom, regionhandle region);
+void opFighterFormationTypeCP(char* name, featom* atom);
+//Corvette
+void opCorvFormationTypeDrawCP(featom *atom, regionhandle region);
+void opCorvFormationTypeCP(char* name, featom* atom);
+void opCorvFormationSizeDrawCP(featom *atom, regionhandle region);
+void opCorvFormationSizeCP(char* name, featom* atom);
+//Frigate
+void opFrigateFormationTypeDrawCP(featom *atom, regionhandle region);
+void opFrigateFormationTypeCP(char* name, featom* atom);
+void opFrigateFormationSizeDrawCP(featom *atom, regionhandle region);
+void opFrigateFormationSizeCP(char* name, featom* atom);
+
+//Capital
+void opCapitalFormationTypeDrawCP(featom *atom, regionhandle region);
+void opCapitalFormationTypeCP(char* name, featom* atom);
+void opCapitalFormationSizeDrawCP(featom *atom, regionhandle region);
+void opCapitalFormationSizeCP(char* name, featom* atom);
+
 void opTaskbarUp(char* name, featom* atom);
 void opIncreaseChatting(char* name, featom* atom);
 void opDecreaseChatting(char* name, featom* atom);
@@ -472,6 +505,7 @@ fecallback utyCallbacks[] =
     {mrWallFormation,           "CSM_WallFormation"},
     {mrSphereFormation,         "CSM_SphereFormation"},
     {mrCustomFormation,         "CSM_PicketFormation"},
+	{mrAutoFormation,           "CSM_AutoFormation"},
     {mrHarvestResources,        "CSM_Harvest"},
     {mrBuildShips,              "CSM_Build"},
     {mrTradeStuff,              "CSM_Trade"},
@@ -596,6 +630,23 @@ fecallback utyCallbacks[] =
     {opCPUDifficulty,           "OP_CPU_Difficulty"},
     {opCPUAttacks,              "OP_CPU_Attacks"},
     {opInfoOverlay,             "OP_Info_Overlay"},
+    {opPauseOrdersCB,           "OP_PAUSE_ORDERS"},
+	{opIntoVideosCB,           "OP_INTRO_VIDEOS"},
+	{opRUEndMission,           "OP_RU_END_MISSION"},
+	{opShipRecoilCP,           "OP_SHIP_RECOIL"},
+	{opShipsAlwaysUseOwnerColorsCB,           "OP_ALWAYS_USE_PLAYER_COLORS"},
+	{opExtendedInfoOverlayCB,           "OP_EXTENDED_INFO_OVERLAY"},
+	{opDisableNlipsCB,           "OP_DISABLE_NLIPS"},
+	{opOpenGLMSAACB,           "OP_OPENGL_MSAA"},
+    {opturboTimeCompFactorCB,   "OP_TimeCompression_Factor"},
+    {opFighterFormationSizeCP,   "OP_Fighter_Formation_Size"},
+    {opFighterFormationTypeCP,   "OP_Fighter_Formation_Type"},
+    {opCorvFormationSizeCP,   "OP_Corv_Formation_Size"},
+    {opCorvFormationTypeCP,   "OP_Corv_Formation_Type"},
+    {opFrigateFormationTypeCP,   "OP_Frigate_Formation_Type"},
+    {opFrigateFormationSizeCP,   "OP_Frigate_Formation_Size"},
+    {opCapitalFormationTypeCP,   "OP_Capital_Formation_Type"},
+    {opCapitalFormationSizeCP,   "OP_Capital_Formation_Size"},
     {opTaskbarUp,               "OP_Taskbar_Up"},
     {opIncreaseChatting,        "OP_Increase_Chatting"},
     {opDecreaseChatting,        "OP_Dencrease_Chatting"},
@@ -624,6 +675,15 @@ fedrawcallback utyDrawCallbacks[] =
     {opNoPalDraw,               "NP_Draw"},
     {utyDrawDroppedPlayer,      "UTY_PlayerDropped"},
     {opCountdownBoxDraw,        "OP_DrawCountdownBox"},
+    {opDrawTimeCompressionFactor,        "OP_TimeCompressionFactorDraw"},
+    {opFighterFormationSizeDrawCP,        "OP_Fighter_Formation_Size_Draw"},
+    {opFighterFormationTypeDrawCP,        "OP_Fighter_Formation_Type_Draw"},
+    {opCorvFormationTypeDrawCP,        "OP_Corv_Formation_Type_Draw"},
+    {opCorvFormationSizeDrawCP,        "OP_Corv_Formation_Size_Draw"},
+    {opFrigateFormationTypeDrawCP,        "OP_Frigate_Formation_Type_Draw"},
+    {opFrigateFormationSizeDrawCP,        "OP_Frigate_Formation_Size_Draw"},
+    {opCapitalFormationTypeDrawCP,        "OP_Capital_Formation_Type_Draw"},
+    {opCapitalFormationSizeDrawCP,        "OP_Capital_Formation_Size_Draw"},
     {NULL, NULL}
 };
 
@@ -640,6 +700,9 @@ color versionColor = colWhite;
 
 // some crude formatting within the .cfg's scriptEntry context
 char filecfgblankspace = '\0';
+
+
+
 
 scriptEntry utyOptionsList[] =
 {
@@ -789,6 +852,21 @@ scriptEntry utyOptionsList[] =
     {"ShipRecoil",                     scriptSetUdwordCB, &opShipRecoil},
     {"ShipsAlwaysUseOwnerColors",      scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
     {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
+	{"ExtendedInfoOverlay",            scriptSetUdwordCB, &ext_info_overlay},
+	{"OpenGLMSAA",                     scriptSetUdwordCB, &enableMSAA},
+	{"DisableNLIPS",                     scriptSetUdwordCB, &disableNLIPS},
+	{"TacticalOverlay",                     scriptSetUdwordCB, &smTacticalOverlay},
+
+    {"\n[New Auto Formation Options]\n", scriptSetStringCB, &filecfgblankspace},
+
+    {"AutoFormationFighterFormationSize", scriptSetUdwordCB, &op_fighter_formation_size},
+    {"AutoFormationFighterFormationType", scriptSetUdwordCB, &op_fighter_formation_type},
+    {"AutoFormationCorvFormationSize", scriptSetUdwordCB, &op_corv_formation_size},
+    {"AutoFormationCorvFormationType", scriptSetUdwordCB, &op_corv_formation_type},
+    {"AutoFormationFrigateFormationSize", scriptSetUdwordCB, &op_frigate_formation_size},
+    {"AutoFormationFrigateFormationType", scriptSetUdwordCB, &op_frigate_formation_type},
+    {"AutoFormationCapitalFormationSize", scriptSetUdwordCB, &op_capital_formation_size},
+    {"AutoFormationCapitalFormationType", scriptSetUdwordCB, &op_capital_formation_type},
 
     END_SCRIPT_ENTRY
 };
@@ -842,7 +920,7 @@ void versionNumDraw(featom *atom, regionhandle region)
     strcpy(versionstr, strGetString(strVersion));
     strcat(versionstr, " ");
     strcat(versionstr, networkVersion);
-    strcat(versionstr, ".");
+    strcat(versionstr, " ");
     strcat(versionstr, minorBuildVersion);
 
     dbgAssertOrIgnore(strlen(versionstr) < 70);
@@ -889,12 +967,17 @@ void utyOptionsFileRead(void)
     {
         ch_buf[0] = '\0';
     }
+	dbgMessagef("Loading config: %s", ch_buf);
     scriptSetFileSystem(ch_buf, UTY_CONFIG_FILENAME, utyOptionsList);
 
     //call any functions that need to acknowledge a change due to loading
     cameraSensitivitySet(opMouseSens);
     battleChatterFrequencySet(opBattleChatter);
 
+	if (tpGameCreated.numComputers == 0)
+	{
+		tpGameCreated.numComputers = 1;
+	}
 }
 
 /*-----------------------------------------------------------------------------
@@ -953,7 +1036,7 @@ void utyOptionsFileWrite(void)
     }
     
     fclose(f);
-
+    //dbgMessagef("Wrote config file: %s", UTY_CONFIG_FILENAME);
 }
 
 /*-----------------------------------------------------------------------------
@@ -965,7 +1048,7 @@ void utyOptionsFileWrite(void)
 ----------------------------------------------------------------------------*/
 color utyBaseColor;
 color utyStripeColor;
-bool32 utyShipsAlwaysUseOwnerColors = FALSE;
+bool32 utyShipsAlwaysUseOwnerColors = TRUE;
 // bool32 utyColorsPicked = FALSE;
 
 void utyPickColors(char *name, featom *atom)
@@ -1503,6 +1586,8 @@ void gameStart(char *loadfilename)
     uword i;
     //udword numCompPlayers = 0;
 
+	//reloadStaticShipInfo();
+
 #if MAIN_CDCheck
     if (mainCDCheckEnabled)
     {
@@ -2004,6 +2089,7 @@ abortloading:
     cameraJoystickReset();
 
     gameIsRunning = TRUE;
+	updateNLIPSStatus();
 }
 
 /*-----------------------------------------------------------------------------

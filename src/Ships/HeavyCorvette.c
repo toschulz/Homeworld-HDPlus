@@ -233,7 +233,7 @@ bool32 doBurstFire(Ship *ship)
     sdword done;
     vector trajectory,heading;
     real32 range,one_over_range;
-    Ship dummyTarg;
+    SpaceObjRotImpTarg dummyTarg;
 
     vecSub(trajectory,spec->burstFireVector,ship->posinfo.position);
     range = vecMagnitudeSquared(trajectory);

@@ -15,7 +15,8 @@
 #endif
 
 #include "BigFile.h"
-
+#include "FEFlow.h"
+#include "Universe.h"
 #include "BitIO.h"
 #include "LZSS.h"
 #include "standard_library.h"
@@ -71,6 +72,13 @@ bool32 LogFileLoads = FALSE;
 
 bigFileConfiguration bigFilePrecedence[] = {
     {
+        "UpdateHDPlus.big",          // bigFileName
+        FALSE,                 // required
+        NULL,                  // filePtr
+        UNINITIALISED_BIG_TOC, // tableOfContents
+        NULL,                  // localFileRelativeAge
+    },
+	{
         "Update.big",          // bigFileName
         FALSE,                 // required
         NULL,                  // filePtr
@@ -2564,9 +2572,31 @@ bool32 bigOpenAllBigFiles(void)
                            
             memset(bigFilePrecedence[bigfile_i].localFileRelativeAge,
                 0, bigFilePrecedence[bigfile_i].tableOfContents.numFiles);  // 0 = LOCAL_FILE_DOES_NOT_EXIST
+
+			 char* test_str1 = "UpdateHDPlus.big";
+			char* test_str2 = "UpdateHDPlus.big";
+			if (strcmp(bigFilePrecedence[bigfile_i].bigFileName, "UpdateHDPlus.big") == 0)
+			{
+				FE_max_width = 960;
+				FE_max_height = 720;
+				dbgMessagef("HD+ Big file found: %s", bigFilePrecedence[bigfile_i].bigFileName);
+				dbgMessagef("HD+ Eanbled seting frontend to: %dx%d", FE_max_width, FE_max_height);
+				homeworld_hdplus = TRUE;
+				//ext_info_overlay = TRUE;
+			}
+
         }
     }
-    
+
+    if (homeworld_hdplus == FALSE)
+	{
+		//ext_info_overlay = FALSE;
+	}
+
+    /*if (strcmp(bigFilePrecedence[bigfile_i].bigFileName,test_str) == 0)
+	{
+		dbgMessagef("enable hdplus, %s",  bigFilePrecedence[bigfile_i].bigFileName);
+	}*/
     bigFilesystemCompare(fileOverrideBigPath, "");
 
     return TRUE;
@@ -2716,7 +2746,8 @@ void bigFilesystemCompare(char *baseDirectory, char *directory)
     udword fileNum;
     udword bigfile_i = 0;
     static udword compared = 0;
-    static udword numOverriddenLocal[NUMBER_CONFIGURED_BIG_FILES] = {0};
+    //static udword numOverriddenLocal[NUMBER_CONFIGURED_BIG_FILES] = {0,0,0};
+	static udword numOverriddenLocal[NUMBER_CONFIGURED_BIG_FILES] = {0};
 
     if (IgnoreBigfiles || !CompareBigfiles)
     {

@@ -456,11 +456,11 @@ void hrChooseSinglePlayerBitmap(char* pFilenameBuffer)
            : feResRepositionCentredY(SP_LOADING_IMAGE_PROGRESS_BAR_Y);
     
     width  = hrScaleMissionLoadingScreens
-           ? (SP_LOADING_IMAGE_PROGRESS_BAR_WIDTH  * FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN)
+           ? (SP_LOADING_IMAGE_PROGRESS_BAR_WIDTH  * fe_scale_to_fit_factor_relic_screen())
            :  SP_LOADING_IMAGE_PROGRESS_BAR_WIDTH;
     
     height = hrScaleMissionLoadingScreens
-           ? (SP_LOADING_IMAGE_PROGRESS_BAR_HEIGHT * FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN)
+           ? (SP_LOADING_IMAGE_PROGRESS_BAR_HEIGHT * fe_scale_to_fit_factor_relic_screen())
            :  SP_LOADING_IMAGE_PROGRESS_BAR_HEIGHT;
     
     hrSinglePlayerPos.x0 = x;

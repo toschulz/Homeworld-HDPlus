@@ -1369,7 +1369,7 @@ Recover:
 				streamer.status = SOUND_PLAYING;
 			}
 		}
-
+		
                 // TODO: Use semaphores !
                 SDL_Delay(SOUND_STREAM_SLEEP);
 	}

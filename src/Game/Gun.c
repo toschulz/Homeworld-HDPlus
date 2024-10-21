@@ -1823,6 +1823,7 @@ bool32 gunResetGimbleGuns(Ship *ship)
     return oriented;
 }
 
+
 /*-----------------------------------------------------------------------------
     Name        : gunStartup
     Description : Start the gun module
@@ -1833,7 +1834,7 @@ bool32 gunResetGimbleGuns(Ship *ship)
 void gunStartup(void)
 {
     gunRecoilTableCompute();
-    vanillaGunsMode = vanillaMode;
+	vanillaGunsMode = vanillaMode;
 }
 
 /*-----------------------------------------------------------------------------

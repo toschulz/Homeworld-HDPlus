@@ -57,7 +57,6 @@ void gunGetGunPositionInWorld(vector *positionInWorldCoordSys,matrix *coordsys,G
 //compute firepower
 real32 gunFirePower(GunStatic *gunStatic, TacticsType tactics, real32 *fireTime);
 real32 gunShipFirePower(ShipStaticInfo *info, TacticsType tactics);
-
 bool32 gunResetGimbleGuns(Ship *ship);
 
 void gunStartup(void);
@@ -75,7 +74,6 @@ void gunTuneGun(Ship *ship);
 /*=============================================================================
     Variables:
 =============================================================================*/
-
 extern bool32 vanillaGunsMode;
 
 #if GUN_TUNE_MODE

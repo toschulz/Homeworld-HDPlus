@@ -59,6 +59,7 @@ void StripTrailingSpaces(char *value);
 void scriptSetRGBCB(char *directory,char *field,void *dataToFillIn);
 void scriptSetRGBACB(char *directory,char *field,void *dataToFillIn);
 void scriptSetReal32CB(char *directory,char *field,void *dataToFillIn);
+void scriptSetReal32CBNLIPS(char *directory,char *field,void *dataToFillIn);
 void scriptSetReal32CB_ARRAY(char *directory,char *field, real32 *dataToFillIn);
 void scriptSetReal32SqrCB(char *directory,char *field,void *dataToFillIn);
 void scriptSetSbyteCB(char *directory,char *field,void *dataToFillIn);

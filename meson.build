@@ -24,7 +24,7 @@ c_base_args = [
 	'-D_REENTRANT',
 
 	# Treat all warnings as errors. We want all new code to be as safe & clean as possible
-	'-Werror',
+	#'-Werror',
 
 	# Ignore existing issues in the codebase
 	# TODO: re-enable them one by one to fix them

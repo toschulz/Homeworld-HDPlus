@@ -54,6 +54,8 @@
 #include "Tweak.h"
 #include "UnivUpdate.h"
 #include "utility.h"
+#include "Options.h"
+#include "Select.h"
 
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
@@ -102,6 +104,8 @@ meshdata *defaultmesh = NULL;
 ubyte turboTimeCompressionFactor = 8;  // same as Homeworld Cataclysm
 bool32 universeTurbo = FALSE;
 bool32 universePause = FALSE;
+bool32 ext_info_overlay = TRUE;
+//bool32 opOpenglMSAA = FALSE;
 
 sdword cdMaxShipsAllowed;            // max number of ships allowed
 sdword cdLimitCaps[TOTAL_NUM_SHIPS]; // max number of ships per player allowed
@@ -167,6 +171,9 @@ uword RacesAllowedForGivenShip[TOTAL_NUM_SHIPS] =
 };
 
 bool32 universeForceDefaultShip = FALSE;   //flag for forcing ships to be loaded as rave borgs
+
+bool8 nlips_msg_flag = FALSE;
+time_t nlips_msg_ts = 0;
 
 #if UNIV_SHIP_LOADFREE_LOG
 bool32 univLoadFreeLog = FALSE;
@@ -609,6 +616,7 @@ scriptStructEntry ShipStaticScriptTable[] =
     { "turnspeed[TURN_PITCH]",          scriptSetReal32CB,   &(ShipStaticInfoR1[0].turnspeedstat[TURN_PITCH]),  &(ShipStaticInfoR1[0]) },
     { "turnspeed[TURN_ROLL]",           scriptSetReal32CB,   &(ShipStaticInfoR1[0].turnspeedstat[TURN_ROLL]),  &(ShipStaticInfoR1[0]) },
     { "N-LIPS",                         scriptSetReal32CB,   &(ShipStaticInfoR1[0].scaleCap),  &(ShipStaticInfoR1[0]) },
+    //{ "N-LIPS",                         scriptSetReal32CB,   &(ShipStaticInfoR1[0].scaleCap_backup),  &(ShipStaticInfoR1[0]) },
 //    { "scaleCap",                       scriptSetReal32CB,   &(ShipStaticInfoR1[0].scaleCap),  &(ShipStaticInfoR1[0]) },
 #if SO_CLOOGE_SCALE
     { "scaleFactor",                    scriptSetReal32CB,   &(ShipStaticInfoR1[0].scaleFactor),  &(ShipStaticInfoR1[0]) },
@@ -3019,6 +3027,111 @@ void universeLoadEverythingNeeded(void)
 }
 
 /*-----------------------------------------------------------------------------
+    Name        : reloadShipTrails
+    Description :
+    Inputs      : none
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+void reloadShipTrails()
+{
+	Node *curnode = universe.ShipList.head;
+	Node *nextnode;
+	Ship* ship_data;
+
+	while (curnode != NULL)
+	{
+		nextnode = curnode->next;
+		ship_data = curnode->structptr;
+		InitializeEngineTrails(ship_data);
+		curnode = nextnode;
+	}
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : updateNLIPSStatus
+    Description :
+    Inputs      : none
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+void updateNLIPSStatus(void)
+{
+	ShipRace shiprace;
+	ShipType shiptype;
+	ShipType firstshiptype;
+    ShipType lastshiptype;
+	ShipStaticInfo *shipstaticinfo;
+	real32 scaleCap_min = 0.0000;
+
+	//dbgMessagef("updateNLIPSStatus");
+
+	for (shiprace=0;shiprace<NUM_RACES;shiprace++)
+    {
+        firstshiptype = FirstShipTypeOfRace[shiprace];
+        lastshiptype = LastShipTypeOfRace[shiprace];
+		for (shiptype=firstshiptype;shiptype<=lastshiptype;shiptype++)
+        {
+			shipstaticinfo = GetShipStaticInfo(shiptype,shiprace);
+			//dbgMessagef("updateNLIPSStatus, shiprace: %d, shiptype: %d", shiprace,shiptype);
+			if (shipstaticinfo->scaleCap_backup == 0 && shipstaticinfo->scaleCap != scaleCap_min)
+			{
+				//dbgMessagef("updateNLIPSStatus, setting scaleCap_backup");
+				shipstaticinfo->scaleCap_backup = shipstaticinfo->scaleCap;
+
+				for (int trail_index = 0; trail_index < MAX_NUM_TRAILS; trail_index++)
+				{
+					shipstaticinfo->trailScaleCap_backup[trail_index] = shipstaticinfo->trailScaleCap[trail_index];
+				}
+			}
+			if (disableNLIPS == TRUE)
+			{
+				shipstaticinfo->scaleCap = scaleCap_min;
+				if (shipstaticinfo->shipclass == CLASS_Fighter)
+				{
+					shipstaticinfo->scaleCap = 0.0000125;
+				}
+				if (shipstaticinfo->shipclass == CLASS_Corvette)
+				{
+					shipstaticinfo->scaleCap = 0.0000125;
+				}
+				//shipstaticinfo->shipclass
+				for (int trail_index = 0; trail_index < MAX_NUM_TRAILS; trail_index++)
+				{
+					shipstaticinfo->trailScaleCap[trail_index] = 0;
+					//dbgMessagef("updateNLIPSStatus, trailScaleCap: %f, index: %d", shipstaticinfo->trailScaleCap[trail_index], trail_index);
+				}
+			} else
+			{
+				if (shipstaticinfo->scaleCap_backup != scaleCap_min)
+				{
+					shipstaticinfo->scaleCap = shipstaticinfo->scaleCap_backup;
+				}
+				for (int trail_index = 0; trail_index < MAX_NUM_TRAILS; trail_index++)
+				{
+					shipstaticinfo->trailScaleCap[trail_index] = shipstaticinfo->trailScaleCap_backup[trail_index];
+				}
+			}
+		}
+	}
+	reloadShipTrails();
+}
+
+void ShowNLIPSMSG()
+{
+	char* msg_str;
+	if (disableNLIPS == TRUE)
+	{
+		msg_str = "Disabled N-LIPS";
+	} else
+	{
+		msg_str = "Enabled N-LIPS";
+	}
+	fontMakeCurrent(selGroupFont0);
+	fontPrint(8, 8, colWhite, msg_str);
+}
+
+/*-----------------------------------------------------------------------------
     Name        : universeStaticInit
     Description : Initializes static data for the Universe.  Only the ships,
                     resources, missiles etc. that are needed will be loaded.
@@ -3441,6 +3554,8 @@ abortloadinggame:
             GetShipStaticInfo(Mothership,R2)->staticheader.immobile = FALSE;
         }
     }
+
+    //reloadStaticShipInfo();
 }
 
 /*-----------------------------------------------------------------------------

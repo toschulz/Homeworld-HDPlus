@@ -314,6 +314,11 @@ extern bool32   feRenderEverything;
 extern sdword feMenuLevel;
 extern sdword feDontFlush;
 
+extern uword FE_max_width;
+extern uword FE_max_height;
+
+extern bool32 homeworld_hdplus;
+
 #if FEF_TEXTURES_DISABLABLE
 extern bool32 fetEnableTextures;
 #endif
@@ -335,16 +340,20 @@ extern bool32 fetEnableTextures;
 
 // Relic scaled all their FE graphics to the minimum resolution they supported
 // and centred it on screen. With today's resolutions that's a tad small...
-#define FE_RELIC_SCREEN_WIDTH   640
-#define FE_RELIC_SCREEN_HEIGHT  480
+//#define FE_RELIC_SCREEN_WIDTH   960
+//#define FE_RELIC_SCREEN_HEIGHT  720
+//#define FE_RELIC_SCREEN_WIDTH   640
+//#define FE_RELIC_SCREEN_HEIGHT  480
 
+
+/*
 #define FE_SCALE_TO_FIT_FACTOR(to_fit_width, to_fit_height, current_width, current_height)  \
     min(((real32)(to_fit_width)  / (real32)(current_width)),                                \
         ((real32)(to_fit_height) / (real32)(current_height)))
 
 #define FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN                                  \
     FE_SCALE_TO_FIT_FACTOR(MAIN_WindowWidth,      MAIN_WindowHeight,         \
-                           FE_RELIC_SCREEN_WIDTH, FE_RELIC_SCREEN_HEIGHT)
+                           FE_RELIC_SCREEN_WIDTH, FE_RELIC_SCREEN_HEIGHT)*/
 
 /*=============================================================================
     Functions:
@@ -425,5 +434,7 @@ sdword feResRepositionScaledY(sdword y);
 bool32 feAllScreensReposition(void);
 
 udword feButtonProcess(regionhandle region, smemsize ID, udword event, udword data);
+
+real32 fe_scale_to_fit_factor_relic_screen();
 
 #endif
